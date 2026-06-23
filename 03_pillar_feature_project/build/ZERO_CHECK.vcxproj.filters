@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\user\Desktop\Onechip\Codex\my project\03_pillar_feature_project\build\CMakeFiles\3bedb17df9896a3a05aac3d751db25b6\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{BBAAA10B-597D-3F21-8B22-26DBCEF0EBFA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

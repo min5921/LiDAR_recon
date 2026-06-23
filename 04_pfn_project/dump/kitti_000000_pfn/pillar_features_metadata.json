@@ -1,0 +1,5 @@
+{
+  "num_pillars": 10404,
+  "out_channels": 64,
+  "shape": [10404, 64]
+}

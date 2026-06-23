@@ -1,0 +1,3 @@
+C:/Users/user/Desktop/Onechip/Codex/my project/02_project/build/CMakeFiles/centerpoint_voxel_dump.dir
+C:/Users/user/Desktop/Onechip/Codex/my project/02_project/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/user/Desktop/Onechip/Codex/my project/02_project/build/CMakeFiles/ZERO_CHECK.dir

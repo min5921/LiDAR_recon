@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\user\Desktop\Onechip\Codex\my project\03_pillar_feature_project\src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\user\Desktop\Onechip\Codex\my project\03_pillar_feature_project\src\io\decorated_dump_writer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\user\Desktop\Onechip\Codex\my project\03_pillar_feature_project\src\io\voxel_dump_reader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\user\Desktop\Onechip\Codex\my project\03_pillar_feature_project\src\pillar_feature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\user\Desktop\Onechip\Codex\my project\03_pillar_feature_project\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{B455EEAF-FC5B-3472-AF69-580D5397F316}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

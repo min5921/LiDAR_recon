@@ -1,0 +1,3 @@
+C:/Users/user/Desktop/Onechip/Codex/my project/03_pillar_feature_project/build/CMakeFiles/centerpoint_decorate_pillars.dir
+C:/Users/user/Desktop/Onechip/Codex/my project/03_pillar_feature_project/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/user/Desktop/Onechip/Codex/my project/03_pillar_feature_project/build/CMakeFiles/ZERO_CHECK.dir

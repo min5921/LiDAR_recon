@@ -1,0 +1,9 @@
+{
+  "num_pillars": 10404,
+  "max_points_per_pillar": 20,
+  "feature_dim": 4,
+  "coordinate_order": "batch,z,y,x",
+  "grid_size_xyz": [468, 468, 1],
+  "voxel_size": [0.32, 0.32, 6],
+  "point_cloud_range": [-74.88, -74.88, -2, 74.88, 74.88, 4]
+}

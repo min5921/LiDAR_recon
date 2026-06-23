@@ -1,0 +1,10 @@
+^C:\USERS\USER\DESKTOP\ONECHIP\CODEX\MY PROJECT\04_PFN_PROJECT\BUILD\CMAKEFILES\78E336BEE93B71E964FD908E17539118\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/user/Desktop/Onechip/Codex/my project/04_pfn_project" "-BC:/Users/user/Desktop/Onechip/Codex/my project/04_pfn_project/build" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "C:/Users/user/Desktop/Onechip/Codex/my project/04_pfn_project/build/centerpoint_pfn.sln"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -1,0 +1,7 @@
+point_cloud_range: [-74.88, -74.88, -2.0, 74.88, 74.88, 4.0]
+voxel_size: [0.32, 0.32, 6.0]
+max_points_per_voxel: 20
+max_voxels: 60000
+feature_dim: 5
+coordinate_order: batch,z,y,x
+
