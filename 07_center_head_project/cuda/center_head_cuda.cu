@@ -1,0 +1,22 @@
+#include "centerpoint/head.hpp"
+#include <cublas_v2.h>
+#include <cuda_runtime.h>
+#include <sstream>
+#include <stdexcept>
+
+namespace centerpoint { namespace {
+void cuda_ok(cudaError_t s,const char* op){if(s!=cudaSuccess)throw std::runtime_error(std::string(op)+": "+cudaGetErrorString(s));}
+void blas_ok(cublasStatus_t s,const char* op){if(s!=CUBLAS_STATUS_SUCCESS)throw std::runtime_error(std::string(op)+" cuBLAS error");}
+struct Handle{cublasHandle_t h=nullptr;Handle(){blas_ok(cublasCreate(&h),"cublasCreate");}~Handle(){if(h)cublasDestroy(h);}};
+struct Buffer{float* p=nullptr;std::size_t n=0;Buffer()=default;explicit Buffer(std::size_t count):n(count){cuda_ok(cudaMalloc(&p,n*4),"cudaMalloc");}~Buffer(){if(p)cudaFree(p);}Buffer(const Buffer&)=delete;Buffer& operator=(const Buffer&)=delete;Buffer(Buffer&&o)noexcept:p(o.p),n(o.n){o.p=nullptr;o.n=0;}Buffer& operator=(Buffer&&o)noexcept{if(this!=&o){if(p)cudaFree(p);p=o.p;n=o.n;o.p=nullptr;o.n=0;}return *this;}};
+struct DT{Buffer data;int c=0,h=0,w=0;std::size_t count()const{return static_cast<std::size_t>(c)*h*w;}};
+Buffer upload(const std::vector<float>& v){Buffer b(v.size());cuda_ok(cudaMemcpy(b.p,v.data(),v.size()*4,cudaMemcpyHostToDevice),"upload");return b;}
+int blocks(std::size_t n){return static_cast<int>((n+255)/256);}
+__global__ void im2col(const float* x,float* col,int c,int h,int w,std::size_t n){std::size_t i=static_cast<std::size_t>(blockIdx.x)*blockDim.x+threadIdx.x;if(i>=n)return;int spatial=h*w;int pos=i%spatial;int q=i/spatial;int kx=q%3;q/=3;int ky=q%3;int ch=q/3;int y=pos/w,xp=pos%w,iy=y+ky-1,ix=xp+kx-1;col[i]=(iy>=0&&iy<h&&ix>=0&&ix<w)?x[(static_cast<std::size_t>(ch)*h+iy)*w+ix]:0.0F;}
+__global__ void bias_bn_relu(float* x,const float* cb,const float* bw,const float* bb,const float* mean,const float* var,int spatial,float eps,std::size_t n){std::size_t i=static_cast<std::size_t>(blockIdx.x)*blockDim.x+threadIdx.x;if(i>=n)return;int c=i/spatial;float v=x[i]+cb[c];v=(v-mean[c])*rsqrtf(var[c]+eps)*bw[c]+bb[c];x[i]=fmaxf(v,0.0F);}
+__global__ void add_bias(float* x,const float* b,int spatial,std::size_t n){std::size_t i=static_cast<std::size_t>(blockIdx.x)*blockDim.x+threadIdx.x;if(i<n)x[i]+=b[i/spatial];}
+DT conv(Handle& handle,const DT& in,const Conv& layer,float eps){if(in.c!=layer.in_channels)throw std::runtime_error(layer.name+" channel mismatch");int spatial=in.h*in.w,reduction=in.c*9;Buffer columns(static_cast<std::size_t>(reduction)*spatial);im2col<<<blocks(columns.n),256>>>(in.data.p,columns.p,in.c,in.h,in.w,columns.n);cuda_ok(cudaGetLastError(),"im2col");Buffer weight=upload(layer.weight);DT out;out.c=layer.out_channels;out.h=in.h;out.w=in.w;out.data=Buffer(out.count());float alpha=1,beta=0;blas_ok(cublasSgemm(handle.h,CUBLAS_OP_N,CUBLAS_OP_N,spatial,out.c,reduction,&alpha,columns.p,spatial,weight.p,reduction,&beta,out.data.p,spatial),layer.name.c_str());Buffer bias=upload(layer.bias);if(layer.has_bn){Buffer bw=upload(layer.bn.weight),bb=upload(layer.bn.bias),mean=upload(layer.bn.mean),var=upload(layer.bn.variance);bias_bn_relu<<<blocks(out.count()),256>>>(out.data.p,bias.p,bw.p,bb.p,mean.p,var.p,spatial,eps,out.count());}else add_bias<<<blocks(out.count()),256>>>(out.data.p,bias.p,spatial,out.count());cuda_ok(cudaGetLastError(),"post conv kernel");return out;}
+Tensor download(const DT& d){Tensor t;t.channels=d.c;t.height=d.h;t.width=d.w;t.values.resize(d.count());cuda_ok(cudaMemcpy(t.values.data(),d.data.p,d.count()*4,cudaMemcpyDeviceToHost),"download");return t;}
+}
+HeadResult run_center_head_cuda(const Tensor& input,const HeadWeights& weights){if(input.channels!=384||input.height!=468||input.width!=468)throw std::invalid_argument("CenterHead expects [1,384,468,468]");Handle handle;DT in;in.c=input.channels;in.h=input.height;in.w=input.width;in.data=upload(input.values);cudaEvent_t start,stop;cuda_ok(cudaEventCreate(&start),"event");cuda_ok(cudaEventCreate(&stop),"event");cuda_ok(cudaEventRecord(start),"record");try{DT shared=conv(handle,in,weights.shared,weights.bn_epsilon);HeadResult result;for(int i=0;i<5;++i){DT hidden=conv(handle,shared,weights.branches[i].hidden,weights.bn_epsilon);DT output=conv(handle,hidden,weights.branches[i].output,weights.bn_epsilon);result.outputs[i]=download(output);}cuda_ok(cudaEventRecord(stop),"record");cuda_ok(cudaEventSynchronize(stop),"sync");cuda_ok(cudaEventElapsedTime(&result.elapsed_ms,start,stop),"elapsed");cudaEventDestroy(stop);cudaEventDestroy(start);return result;}catch(...){cudaEventDestroy(stop);cudaEventDestroy(start);throw;}}
+}

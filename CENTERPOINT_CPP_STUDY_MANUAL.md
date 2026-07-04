@@ -2,7 +2,7 @@
 
 이 문서는 현재 프로젝트를 처음 보는 사람도 전체 구조를 이해하고, 코드를 읽고, 빌드하고, 같은 결과를 재현할 수 있도록 작성한 통합 매뉴얼이다.
 
-현재 구현은 **Waymo용 CenterPoint PointPillars 구조를 C++/CUDA로 옮기기 위한 단계별 학습 프로젝트**다. 아직 완성된 3D detector는 아니며, 현재는 LiDAR point cloud가 BEV(Bird's-Eye View) tensor로 변환되는 과정까지 CPU C++로 구현되어 있다.
+현재 구현은 **Waymo용 CenterPoint PointPillars 추론 구조를 C++/CUDA로 옮긴 단계별 학습 프로젝트**다. Voxelization부터 PFN, Scatter, 전체 RPN, CenterHead, Box Decode, Rotated NMS까지 구현되어 최종 3D bounding box 파일을 만들 수 있다. 현재 남은 큰 작업은 Waymo TFRecord 입력 변환, 시각화와 정답 기반 평가, 그리고 GPU 메모리 안에서 단계를 직접 연결하는 최적화다.
 
 ## 이 문서를 읽는 방법
 
@@ -13,7 +13,7 @@
   0 -> 4 -> 5 -> 6 -> 17
 
 연산 원리를 공부하려는 경우:
-  0 -> 2 -> 3 -> 7 -> 8 -> 9 -> 10 -> 11 -> 19
+  0 -> 2 -> 3 -> 7 -> 8 -> 9 -> 10 -> 10A -> 10B -> 10C -> 11 -> 19
 
 실제 weight를 연결하려는 경우:
   9.8 -> 12 -> 13 -> 16
@@ -35,6 +35,9 @@
 8. 03단계: Pillar Feature Decoration
 9. 04단계: PFN
 10. 05단계: Scatter to BEV
+10A. 06단계: 전체 RPN CUDA
+10B. 07단계: CenterHead CUDA
+10C. 08단계: Box Decode와 Rotated NMS
 11. 단계별 tensor 흐름
 12. Weight 파일 선택 방법
 13. Waymo 데이터 준비 상태
@@ -145,15 +148,16 @@ LiDAR points
 ```text
 [완료] 02 Voxelization
 [완료] 03 Pillar Feature Decoration
-[구조 완료] 04 Dummy PFN
+[완료] 04 실제 체크포인트 two-layer PFN
 [완료] 05 Scatter
-[미구현] 2D RPN Backbone
-[미구현] CenterHead
-[미구현] Decode / Rotated NMS
-[미구현] CUDA 최적화
+[완료] 06 전체 2D RPN CUDA
+[완료] 07 CenterHead CUDA
+[완료] 08 Decode CUDA / Rotated NMS C++
+[다음] Waymo TFRecord 변환과 시각화/평가
+[다음] 단계 사이 Host-GPU 복사 제거와 kernel 최적화
 ```
 
-`04_pfn_project`는 PFN의 연산 구조를 검증하기 위한 dummy weight 버전이다. 실제 CenterPoint 체크포인트와 완전히 같은 2단 PFN은 아직 구현하지 않았다.
+`04_pfn_project`에는 학습용 dummy 경로와 실제 `centerpoint_waymo_pointpillars_50_novelocity.pth`의 two-layer PFN 경로가 함께 있다. 06과 07 역시 같은 체크포인트의 `neck.*`, `bbox_head.*` tensor를 추출해 PyTorch runtime 없이 실행한다.
 
 ---
 
@@ -252,8 +256,11 @@ my project/
 │  └─ implementation_analysis.md  구현 방향 분석
 ├─ 02_project/                    CPU Voxelization
 ├─ 03_pillar_feature_project/     Feature Decoration
-├─ 04_pfn_project/                Dummy PFN
+├─ 04_pfn_project/                Dummy + 실제 two-layer PFN
 ├─ 05_scatter_project/            Scatter to BEV
+├─ 06_rpn_project/                전체 RPN CUDA
+├─ 07_center_head_project/        CenterHead CUDA
+├─ 08_decode_project/             Box Decode + Rotated NMS
 ├─ 000_waymo_training_project/    Waymo 변환/학습 준비
 └─ CENTERPOINT_CPP_STUDY_MANUAL.md
 ```
@@ -338,15 +345,15 @@ cd "C:\Users\user\Desktop\Onechip\Codex\my project\03_pillar_feature_project"
   ".\dump\kitti_000000_decorated"
 ```
 
-### 6.3 Dummy PFN
+### 6.3 실제 체크포인트 PFN
 
 ```powershell
 cd "C:\Users\user\Desktop\Onechip\Codex\my project\04_pfn_project"
 
-.\build\Release\centerpoint_pfn_dummy.exe `
+.\build\Release\centerpoint_pfn_checkpoint.exe `
   "..\03_pillar_feature_project\dump\kitti_000000_decorated" `
-  ".\dump\kitti_000000_pfn" `
-  64
+  ".\weights\waymo_pointpillars_50_novelocity" `
+  ".\dump\kitti_000000_checkpoint_pfn"
 ```
 
 ### 6.4 Scatter
@@ -355,7 +362,7 @@ cd "C:\Users\user\Desktop\Onechip\Codex\my project\04_pfn_project"
 cd "C:\Users\user\Desktop\Onechip\Codex\my project\05_scatter_project"
 
 .\build\Release\centerpoint_scatter.exe `
-  "..\04_pfn_project\dump\kitti_000000_pfn" `
+  "..\04_pfn_project\dump\kitti_000000_checkpoint_pfn" `
   "..\02_project\dump\kitti_000000" `
   ".\dump\kitti_000000_scatter"
 ```
@@ -367,6 +374,37 @@ cd "C:\Users\user\Desktop\Onechip\Codex\my project\05_scatter_project"
 ├─ bev_features.bin
 └─ bev_features_metadata.json
 ```
+
+### 6.5 전체 RPN CUDA
+
+```powershell
+cd "..\06_rpn_project"
+.\build_cuda\Release\centerpoint_rpn_full_cuda.exe `
+  "..\05_scatter_project\dump\kitti_000000_scatter" `
+  ".\weights\waymo_pointpillars_50_novelocity" `
+  ".\dump\kitti_000000_rpn"
+```
+
+### 6.6 CenterHead CUDA
+
+```powershell
+cd "..\07_center_head_project"
+.\build_cuda\Release\centerpoint_head_cuda.exe `
+  "..\06_rpn_project\dump\kitti_000000_rpn" `
+  ".\weights" `
+  ".\dump\kitti_000000_head"
+```
+
+### 6.7 Decode와 Rotated NMS
+
+```powershell
+cd "..\08_decode_project"
+.\build_cuda\Release\centerpoint_decode.exe `
+  "..\07_center_head_project\dump\kitti_000000_head" `
+  ".\dump\kitti_000000_detections"
+```
+
+최종 결과는 `detections.csv`, `detections.bin`, `detections_metadata.json`이다.
 
 ---
 
@@ -801,7 +839,7 @@ PFN layer 1:
   출력 [pillar, 64]
 ```
 
-현재 `04_pfn_project`는 학습을 위해 단순화한 **한 층 PFN**이다. 실제 체크포인트를 연결하기 전에 두 층 구조로 확장해야 한다.
+현재 `04_pfn_project`는 위 구조의 실제 two-layer PFN을 구현했다. 체크포인트 weight를 직접 읽는 대신 Python exporter가 tensor별 float32 binary와 metadata를 만들고 C++ reader가 shape를 검증한다. KITTI 입력은 feature가 4개라 Waymo의 `elongation` 위치를 0으로 채워 10차원 decoration으로 맞춘다.
 
 ### 9.9 Python 비교
 
@@ -984,6 +1022,73 @@ Scatter는 값을 계산하지 않고 복사하므로 Python과 C++ 결과가 bi
 
 ---
 
+## 10A. 06단계: 전체 RPN CUDA
+
+RPN은 Scatter의 `[1,64,468,468]` BEV를 2D convolution으로 처리해 더 넓은 주변 문맥을 학습된 feature로 만든다.
+
+```text
+Block 0 [64,468,468]  -> Deblock [128,468,468]
+Block 1 [128,234,234] -> Deblock [128,468,468]
+Block 2 [256,117,117] -> Deblock [128,468,468]
+Channel concat         -> [384,468,468]
+```
+
+일반 convolution은 `im2col CUDA kernel -> cuBLAS SGEMM -> BN/ReLU CUDA kernel` 순서다. Downsample은 stride 2 convolution, upsample은 transposed convolution으로 구현했다. 체크포인트의 `neck.*` 95개 float tensor를 사용하며 PyTorch runtime은 필요 없다.
+
+실제 검증에서 출력은 `[1,384,468,468]`, 반복 SHA-256은 동일했고 선택한 CPU scalar 기준값의 최대 오차는 약 `2.21e-6`이었다. 자세한 코드는 `06_rpn_project/FULL_RPN_IMPLEMENTATION_GUIDE.md`에서 읽는다.
+
+---
+
+## 10B. 07단계: CenterHead CUDA
+
+CenterHead는 RPN feature를 최종 box 구성 요소별 raw prediction map으로 바꾼다.
+
+```text
+입력 [1,384,468,468]
+  -> Shared Conv 384 -> 64 + BN + ReLU
+  -> 다섯 개 독립 branch
+
+reg     [1,2,468,468]  중심의 cell 내부 offset
+height  [1,1,468,468]  box 중심 높이
+dim     [1,3,468,468]  log 공간의 dx,dy,dz
+rot     [1,2,468,468]  sin/cos 회전 표현
+hm      [1,3,468,468]  세 클래스 heatmap logit
+```
+
+각 branch는 `Conv 64->64 + BN + ReLU -> Conv 64->출력 채널`이다. 이 체크포인트는 `novelocity` 모델이므로 velocity branch가 없다. 선택 지점 15개의 CPU reference 최대 오차는 `4.768e-7`이며 모든 출력에 non-finite 값이 없었다.
+
+중요한 점은 이 출력이 아직 box가 아니라는 것이다. 예를 들어 `hm=-3.0`은 확률이 아니며 다음 단계에서 sigmoid가 필요하다. 실제 코드 설명은 `07_center_head_project/IMPLEMENTATION_GUIDE.md`를 본다.
+
+---
+
+## 10C. 08단계: Box Decode와 Rotated NMS
+
+CUDA decode kernel은 feature-map의 각 cell을 독립적으로 처리한다.
+
+```text
+score = sigmoid(max(hm_logits))
+x = (grid_x + reg_x) * 0.32 - 74.88
+y = (grid_y + reg_y) * 0.32 - 74.88
+z = height
+(dx,dy,dz) = exp(dim)
+yaw = atan2(rot_sin, rot_cos)
+```
+
+그 뒤 score `0.1` 이하와 공간 범위 밖 후보를 제거한다. C++ rotated NMS는 점수순 최대 4096개에 대해 회전 사각형의 polygon intersection과 BEV IoU를 계산하고 IoU `0.7` 초과 중복을 억제한다. 최종 출력은 최대 500개다.
+
+```text
+detections.csv 한 행:
+x,y,z,dx,dy,dz,yaw,score,label,source_index
+
+label 0 = VEHICLE
+label 1 = PEDESTRIAN
+label 2 = CYCLIST
+```
+
+KITTI 샘플을 Waymo weight에 넣은 구현 검증에서는 후보 1380개와 최종 500개가 생성됐다. 독립 NumPy/Python decode와 rotated NMS의 인덱스·순서·label이 모두 일치했고 최대 수치 차이는 `6.636e-6`이었다. 500개가 나왔다는 사실은 정확도가 좋다는 의미가 아니다. 데이터셋이 다르므로 실제 품질 평가는 Waymo frame과 annotation으로 해야 한다.
+
+---
+
 ## 11. 단계별 tensor 흐름
 
 현재 KITTI sample 기준:
@@ -1000,11 +1105,24 @@ Voxelization
 Decoration
   decorated     [10404, 20, 9]
 
-Dummy PFN
+Checkpoint two-layer PFN
   pillar feature [10404, 64]
 
 Scatter
   BEV            [1, 64, 468, 468]
+
+RPN
+  feature        [1, 384, 468, 468]
+
+CenterHead
+  reg            [1, 2, 468, 468]
+  height         [1, 1, 468, 468]
+  dim            [1, 3, 468, 468]
+  rot            [1, 2, 468, 468]
+  hm             [1, 3, 468, 468]
+
+Decode + NMS
+  detections     [num_detections, 9]
 ```
 
 Waymo 실제 입력을 사용할 때 예상 흐름:
@@ -1024,6 +1142,15 @@ Two-layer PFN
 
 Scatter
   [1, 64, 468, 468]
+
+RPN
+  [1, 384, 468, 468]
+
+CenterHead
+  raw maps [2,1,3,2,3] x [468,468]
+
+Decode + NMS
+  [num_detections, x,y,z,dx,dy,dz,yaw,score,label]
 ```
 
 ---
@@ -1220,17 +1347,16 @@ Python과 정확히 비교한다.
 CUDA kernel의 기준 결과를 만든다.
 ```
 
-성능 향상은 이후 다음 작업에서 발생한다.
+현재 역할 분담은 다음과 같다.
 
 ```text
-Voxelization CUDA kernel
-PFN CUDA 또는 TensorRT
-Scatter CUDA kernel
-2D network TensorRT
-Decode CUDA kernel
-Rotated NMS CUDA kernel
-Host-GPU copy 최소화
+CPU C++: Voxelization, Decoration, PFN, Scatter, weight/file I/O
+CUDA: RPN convolution, CenterHead convolution, box decode
+cuBLAS: RPN/CenterHead의 matrix multiplication
+CPU C++: 후보 정렬과 rotated polygon IoU NMS
 ```
+
+현재 구현은 정확성 검증을 위해 단계마다 binary를 저장하며 Host-GPU 복사가 존재한다. 최종 최적화에서는 PFN/Scatter도 CUDA로 옮기고 RPN 출력 device pointer를 CenterHead와 Decode에 직접 전달하는 것이 핵심이다. 후보가 최대 4096개인 NMS는 먼저 CPU 정확성을 유지하고, 전체 병목 측정 후 GPU 이전 여부를 판단한다.
 
 권장 순서는 항상 다음과 같다.
 
@@ -1244,9 +1370,9 @@ Host-GPU copy 최소화
 
 ---
 
-## 16. 다음 구현 순서
+## 16. 구현 완료 기록과 다음 순서
 
-### Milestone 1: 실제 two-layer PFN
+### 완료 1: 실제 two-layer PFN
 
 ```text
 Waymo 10차원 decorated input 지원
@@ -1256,9 +1382,9 @@ PFN layer 1: 64 -> 64 -> max
 Python 원본과 비교
 ```
 
-### Milestone 2: Checkpoint weight 추출
+### 완료 2: Checkpoint weight 추출
 
-Linux/PyTorch에서 `.pth`를 읽고 다음과 같은 독립 binary 또는 NPZ로 변환한다.
+`.pth` ZIP archive를 읽는 경량 Python exporter로 다음 독립 binary와 JSON을 생성한다.
 
 ```text
 weight manifest JSON
@@ -1270,19 +1396,13 @@ raw float data
 
 C++에서는 PyTorch 자체를 링크하지 않고 변환된 weight를 읽는 방식이 단순하다.
 
-### Milestone 3: 2D RPN Backbone
+### 완료 3: 2D RPN Backbone
 
 Scatter 출력 `[1,64,468,468]`을 입력으로 받아 Conv2D/BN/ReLU/downsample/upsample을 수행한다.
 
-권장 구현:
+TensorRT 없이 직접 작성한 CUDA im2col kernel, cuBLAS SGEMM, BN/ReLU, transposed convolution으로 구현했다.
 
-```text
-ONNX export
-  -> TensorRT engine
-  -> C++ inference
-```
-
-### Milestone 4: CenterHead
+### 완료 4: CenterHead
 
 세 클래스에 대해 다음 출력을 만든다.
 
@@ -1294,7 +1414,7 @@ dimensions
 rotation sin/cos
 ```
 
-### Milestone 5: Decode
+### 완료 5: Decode
 
 ```text
 score = sigmoid(heatmap)
@@ -1304,7 +1424,7 @@ x = (grid_x + reg_x) * out_size_factor * voxel_x + x_min
 y = (grid_y + reg_y) * out_size_factor * voxel_y + y_min
 ```
 
-### Milestone 6: Rotated NMS
+### 완료 6: Rotated NMS
 
 score가 낮거나 range 밖인 box를 제거하고, 겹치는 rotated box를 억제한다.
 
@@ -1316,6 +1436,25 @@ NMS pre max: 4096
 NMS post max: 500
 NMS IoU threshold: 0.7
 ```
+
+### 다음 1: Waymo TFRecord 한 frame 변환
+
+```text
+.tfrecord Frame protobuf 읽기
+range image zlib 해제
+beam inclination + calibration으로 Cartesian 변환
+첫 번째/두 번째 LiDAR return 결합
+[x,y,z,intensity,elongation] float32 binary 저장
+annotation과 frame metadata 저장
+```
+
+### 다음 2: 실제 Waymo 결과 시각화와 평가
+
+Point cloud 위에 예측 3D box와 정답 box를 함께 표시한다. 이 단계에서 좌표축, box 중심/크기 순서, yaw 부호, class mapping을 눈으로 확인한 뒤 Waymo metric 평가로 넘어간다.
+
+### 다음 3: 단일 GPU 파이프라인 최적화
+
+단계별 dump를 없애고 `PFN -> Scatter -> RPN -> CenterHead -> Decode`를 device memory에서 직접 연결한다. 현재 측정값은 학습용 독립 실행기의 시간이며 최종 실시간 성능으로 해석하면 안 된다.
 
 ---
 
@@ -1432,13 +1571,16 @@ det3d/models/bbox_heads/center_head.py
 
 ## 20. 현재 상태 요약
 
-현재 프로젝트는 LiDAR point cloud가 dense BEV tensor가 되는 전 과정을 독립된 C++ 프로그램으로 나누어 구현했다.
+현재 프로젝트는 LiDAR point cloud부터 최종 3D box 파일까지의 추론 연산을 독립된 C++/CUDA 프로그램으로 나누어 구현했다.
 
 ```text
 Voxelization: Python과 exact match
 Decoration:   Python과 exact match
-Dummy PFN:    Python과 tolerance 내 match
+Checkpoint PFN: NumPy와 allclose, 최대 오차 약 3.34e-6
 Scatter:      Python과 bitwise exact match
+RPN CUDA:     선택 CPU scalar reference 통과, 반복 hash 일치
+CenterHead:   선택 CPU reference 최대 오차 4.768e-7
+Decode/NMS:   독립 Python 전체 결과 일치, 최대 오차 6.636e-6
 ```
 
-가장 중요한 다음 작업은 **원본 Waymo config와 같은 two-layer PFN을 구현하고 실제 체크포인트 weight를 연결하는 것**이다. 그 다음 Scatter 출력부터 RPN과 CenterHead를 TensorRT로 실행하면 완전한 CenterPoint 추론 파이프라인으로 이어진다.
+가장 중요한 다음 작업은 **실제 Waymo TFRecord 한 frame을 `[x,y,z,intensity,elongation]`으로 정확히 변환하는 것**이다. 그 frame으로 현재 파이프라인을 실행하고 예측 box와 Waymo annotation을 함께 시각화해야 모델 품질과 좌표계가 올바른지 판단할 수 있다.
