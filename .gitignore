@@ -1,0 +1,20 @@
+# Local datasets, checkpoints, and generated model artifacts
+00_reference/checkpoints/
+**/weights/
+**/dump/
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.engine
+
+# Generated build and IDE artifacts
+**/build/
+**/build_cuda/
+**/.vs/
+**/x64/
+02_project/02_Project/
+
+# Python cache
+**/__pycache__/
+*.pyc
