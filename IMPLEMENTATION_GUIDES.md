@@ -12,5 +12,6 @@
 | 06 Full | 전체 RPN CUDA | `06_rpn_project/FULL_RPN_IMPLEMENTATION_GUIDE.md` |
 | 07 | CenterHead CUDA | `07_center_head_project/IMPLEMENTATION_GUIDE.md` |
 | 08 | Box Decode + Rotated NMS | `08_decode_project/IMPLEMENTATION_GUIDE.md` |
+| 09 | Waymo Sensor Archive Input Bridge | `09_full_pipeline_project/IMPLEMENTATION_GUIDE.md` |
 
 각 문서는 `입출력 -> main 호출 흐름 -> 핵심 반복문 -> memory offset -> 검증 -> 한계` 순서로 실제 코드를 설명한다.

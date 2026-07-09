@@ -153,7 +153,9 @@ LiDAR points
 [완료] 06 전체 2D RPN CUDA
 [완료] 07 CenterHead CUDA
 [완료] 08 Decode CUDA / Rotated NMS C++
-[다음] Waymo TFRecord 변환과 시각화/평가
+[완료] 09 Waymo derived sensor archive -> 5-feature point bin bridge
+[다음] Waymo frame을 전체 02~08 파이프라인에 연결
+[다음] 시각화/평가
 [다음] 단계 사이 Host-GPU 복사 제거와 kernel 최적화
 ```
 
@@ -261,6 +263,7 @@ my project/
 ├─ 06_rpn_project/                전체 RPN CUDA
 ├─ 07_center_head_project/        CenterHead CUDA
 ├─ 08_decode_project/             Box Decode + Rotated NMS
+├─ 09_full_pipeline_project/      Waymo 입력 bridge와 전체 연결 준비
 ├─ 000_waymo_training_project/    Waymo 변환/학습 준비
 └─ CENTERPOINT_CPP_STUDY_MANUAL.md
 ```
@@ -1437,15 +1440,33 @@ NMS post max: 500
 NMS IoU threshold: 0.7
 ```
 
-### 다음 1: Waymo TFRecord 한 frame 변환
+### 완료 6: Waymo derived sensor archive 입력 bridge
+
+`E:\Waymo_datset\derived_v1_4_3\sensor_archives` 아래의 segment zip은 이미 frame별 lidar bin을 포함한다.
 
 ```text
-.tfrecord Frame protobuf 읽기
-range image zlib 해제
-beam inclination + calibration으로 Cartesian 변환
-첫 번째/두 번째 LiDAR return 결합
-[x,y,z,intensity,elongation] float32 binary 저장
-annotation과 frame metadata 저장
+frame_000/lidar/TOP_return1.bin
+schema: [x, y, z, intensity, elongation, nlz_flag]
+```
+
+`09_full_pipeline_project/tools/export_waymo_frame.py`는 zip 안의 lidar bin을 읽고 마지막 `nlz_flag`를 제외해 현재 C++ CenterPoint 입력인 5-feature point bin을 만든다.
+
+```text
+[x, y, z, intensity, elongation]
+```
+
+첫 검증 frame은 `153830`개 point를 만들었고 C++ `waymo_frame_inspect`가 같은 min/max/mean과 sample 값을 읽었다.
+
+주의할 점은 C++17 표준 라이브러리에는 zip reader가 없다는 것이다. 그래서 현재는 Python exporter가 zip을 풀고, C++는 추론 파이프라인 입력과 같은 raw float32 bin을 읽는다. 순수 C++ zip 직접 읽기는 나중에 miniz/libzip/libarchive 같은 의존성을 붙여 확장할 수 있다.
+
+### 다음 1: Waymo frame을 전체 파이프라인에 연결
+
+```text
+derived sensor archive zip 읽기
+09 exporter로 [x,y,z,intensity,elongation] 저장
+02 voxelization feature_dim=5로 실행
+03~08 단계를 순서대로 연결
+detections.csv 생성
 ```
 
 ### 다음 2: 실제 Waymo 결과 시각화와 평가
@@ -1583,4 +1604,4 @@ CenterHead:   선택 CPU reference 최대 오차 4.768e-7
 Decode/NMS:   독립 Python 전체 결과 일치, 최대 오차 6.636e-6
 ```
 
-가장 중요한 다음 작업은 **실제 Waymo TFRecord 한 frame을 `[x,y,z,intensity,elongation]`으로 정확히 변환하는 것**이다. 그 frame으로 현재 파이프라인을 실행하고 예측 box와 Waymo annotation을 함께 시각화해야 모델 품질과 좌표계가 올바른지 판단할 수 있다.
+가장 중요한 다음 작업은 **09에서 만든 실제 Waymo frame bin을 02~08 전체 파이프라인에 연결하는 것**이다. 그 frame으로 예측 box를 만들고 Waymo annotation과 함께 시각화해야 모델 품질과 좌표계가 올바른지 판단할 수 있다.
