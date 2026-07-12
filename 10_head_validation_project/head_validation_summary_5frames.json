@@ -1,0 +1,125 @@
+{
+  "eval_dir": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\waymo_eval_review_pcdet_5frames",
+  "archive": "E:\\Waymo_datset\\derived_v1_4_3\\sensor_archives\\train\\segment-10017090168044687777_6380_000_6400_000_with_camera_labels.zip",
+  "grid": {
+    "shape": [
+      3,
+      468,
+      468
+    ],
+    "point_cloud_start_xy": [
+      -74.88,
+      -74.88
+    ],
+    "cell_size_xy": [
+      0.32,
+      0.32
+    ]
+  },
+  "local_radius_cells": 2,
+  "top_k": 20,
+  "frames": 5,
+  "labels": 37,
+  "outcome_counts": {
+    "LOW_HEATMAP_SCORE": 25,
+    "DETECTED": 10,
+    "HIGH_HEATMAP_EMITTED_UNMATCHED": 2
+  },
+  "class_counts": {
+    "VEHICLE": 37
+  },
+  "frame_summaries": [
+    {
+      "frame": "frame_000",
+      "labels": 7,
+      "outcomes": {
+        "LOW_HEATMAP_SCORE": 4,
+        "DETECTED": 3
+      },
+      "thresholds": {
+        "VEHICLE": 0.35,
+        "PEDESTRIAN": 0.35,
+        "CYCLIST": 0.35
+      },
+      "heatmap_max_scores": {
+        "VEHICLE": 0.8024168014526367,
+        "PEDESTRIAN": 0.31928882002830505,
+        "CYCLIST": 0.09518767148256302
+      }
+    },
+    {
+      "frame": "frame_001",
+      "labels": 7,
+      "outcomes": {
+        "LOW_HEATMAP_SCORE": 5,
+        "DETECTED": 2
+      },
+      "thresholds": {
+        "VEHICLE": 0.35,
+        "PEDESTRIAN": 0.35,
+        "CYCLIST": 0.35
+      },
+      "heatmap_max_scores": {
+        "VEHICLE": 0.8184636235237122,
+        "PEDESTRIAN": 0.14417323470115662,
+        "CYCLIST": 0.06558482348918915
+      }
+    },
+    {
+      "frame": "frame_002",
+      "labels": 7,
+      "outcomes": {
+        "LOW_HEATMAP_SCORE": 5,
+        "DETECTED": 2
+      },
+      "thresholds": {
+        "VEHICLE": 0.35,
+        "PEDESTRIAN": 0.35,
+        "CYCLIST": 0.35
+      },
+      "heatmap_max_scores": {
+        "VEHICLE": 0.4913090765476227,
+        "PEDESTRIAN": 0.27113592624664307,
+        "CYCLIST": 0.09067458659410477
+      }
+    },
+    {
+      "frame": "frame_003",
+      "labels": 7,
+      "outcomes": {
+        "LOW_HEATMAP_SCORE": 4,
+        "HIGH_HEATMAP_EMITTED_UNMATCHED": 1,
+        "DETECTED": 2
+      },
+      "thresholds": {
+        "VEHICLE": 0.35,
+        "PEDESTRIAN": 0.35,
+        "CYCLIST": 0.35
+      },
+      "heatmap_max_scores": {
+        "VEHICLE": 0.8535366654396057,
+        "PEDESTRIAN": 0.23967058956623077,
+        "CYCLIST": 0.08163435012102127
+      }
+    },
+    {
+      "frame": "frame_004",
+      "labels": 9,
+      "outcomes": {
+        "LOW_HEATMAP_SCORE": 7,
+        "HIGH_HEATMAP_EMITTED_UNMATCHED": 1,
+        "DETECTED": 1
+      },
+      "thresholds": {
+        "VEHICLE": 0.35,
+        "PEDESTRIAN": 0.35,
+        "CYCLIST": 0.35
+      },
+      "heatmap_max_scores": {
+        "VEHICLE": 0.8268948793411255,
+        "PEDESTRIAN": 0.5455941557884216,
+        "CYCLIST": 0.13244709372520447
+      }
+    }
+  ]
+}
