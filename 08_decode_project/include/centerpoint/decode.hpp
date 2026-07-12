@@ -17,6 +17,9 @@ struct DecodeConfig {
   float voxel_x = 0.32F, voxel_y = 0.32F;
   std::array<float, 6> post_range{-80, -80, -10, 80, 80, 10};
   float nms_iou_threshold = 0.7F;
+  std::array<float, 3> class_score_thresholds{0.1F, 0.1F, 0.1F};
+  bool use_class_score_thresholds = false;
+  bool use_pcdet_nms_convention = false;
   int pre_max_size = 4096, post_max_size = 500;
 };
 struct DecodeResult {

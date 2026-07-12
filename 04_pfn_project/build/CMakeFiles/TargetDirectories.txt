@@ -1,3 +1,0 @@
-C:/Users/user/Desktop/Onechip/Codex/my project/04_pfn_project/build/CMakeFiles/centerpoint_pfn_dummy.dir
-C:/Users/user/Desktop/Onechip/Codex/my project/04_pfn_project/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/user/Desktop/Onechip/Codex/my project/04_pfn_project/build/CMakeFiles/ZERO_CHECK.dir

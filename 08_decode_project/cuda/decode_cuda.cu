@@ -53,10 +53,10 @@ struct RawDetection {
 __global__ void decode_kernel(const float *reg, const float *hei,
                               const float *dim, const float *rot,
                               const float *hm, RawDetection *out, int *count,
-                              int h, int w, float threshold, float pcx,
-                              float pcy, float vx, float vy, float minx,
-                              float miny, float minz, float maxx, float maxy,
-                              float maxz) {
+                              int h, int w, float threshold0, float threshold1,
+                              float threshold2, float pcx, float pcy, float vx,
+                              float vy, float minx, float miny, float minz,
+                              float maxx, float maxy, float maxz) {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   int spatial = h * w;
   if (i >= spatial)
@@ -71,6 +71,7 @@ __global__ void decode_kernel(const float *reg, const float *hei,
     }
   }
   float score = 1.0F / (1.0F + expf(-logit));
+  float threshold = label == 0 ? threshold0 : (label == 1 ? threshold1 : threshold2);
   if (!(score > threshold))
     return;
   int yy = i / w, xx = i % w;
@@ -101,9 +102,17 @@ Point intersection(Point a, Point b, Point p, Point q) {
   double t = a1 / den;
   return {a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t};
 }
-std::array<Point, 4> corners(const Detection &b) {
-  double c = std::cos(b.yaw), s = std::sin(b.yaw), hx = b.dx * 0.5,
-         hy = b.dy * 0.5;
+std::array<Point, 4> corners(const Detection &b, bool pcdet_convention) {
+  double yaw = b.yaw;
+  double hx = b.dx * 0.5;
+  double hy = b.dy * 0.5;
+  if (pcdet_convention) {
+    constexpr double kHalfPi = 1.57079632679489661923;
+    yaw = -b.yaw - kHalfPi;
+    hx = b.dy * 0.5;
+    hy = b.dx * 0.5;
+  }
+  double c = std::cos(yaw), s = std::sin(yaw);
   std::array<Point, 4> local = {Point{-hx, -hy}, Point{hx, -hy}, Point{hx, hy},
                                 Point{-hx, hy}};
   for (auto &p : local) {
@@ -120,8 +129,9 @@ double polygon_area(const std::vector<Point> &p) {
   }
   return std::abs(a) * 0.5;
 }
-double rotated_iou(const Detection &a, const Detection &b) {
-  auto ca = corners(a), cb = corners(b);
+double rotated_iou(const Detection &a, const Detection &b,
+                   bool pcdet_convention) {
+  auto ca = corners(a, pcdet_convention), cb = corners(b, pcdet_convention);
   std::vector<Point> poly(ca.begin(), ca.end());
   for (int e = 0; e < 4 && !poly.empty(); ++e) {
     Point p = cb[e], q = cb[(e + 1) % 4];
@@ -163,7 +173,8 @@ std::vector<Detection> nms(const std::vector<Detection> &input,
     kept.push_back(sorted[i]);
     for (std::size_t j = i + 1; j < sorted.size(); ++j)
       if (!suppressed[j] &&
-          rotated_iou(sorted[i], sorted[j]) > cfg.nms_iou_threshold)
+          rotated_iou(sorted[i], sorted[j], cfg.use_pcdet_nms_convention) >
+              cfg.nms_iou_threshold)
         suppressed[j] = 1;
   }
   return kept;
@@ -185,11 +196,20 @@ DecodeResult decode_and_nms(const HeadMaps &m, const DecodeConfig &c) {
   ok(cudaEventCreate(&stop), "event");
   try {
     ok(cudaEventRecord(start), "record");
+    const float threshold0 = c.use_class_score_thresholds
+                                 ? c.class_score_thresholds[0]
+                                 : c.score_threshold;
+    const float threshold1 = c.use_class_score_thresholds
+                                 ? c.class_score_thresholds[1]
+                                 : c.score_threshold;
+    const float threshold2 = c.use_class_score_thresholds
+                                 ? c.class_score_thresholds[2]
+                                 : c.score_threshold;
     decode_kernel<<<(spatial + 255) / 256, 256>>>(
         reg.p, hei.p, dim.p, rot.p, hm.p, device, count, m.height_size,
-        m.width_size, c.score_threshold, c.pc_x, c.pc_y, c.voxel_x, c.voxel_y,
-        c.post_range[0], c.post_range[1], c.post_range[2], c.post_range[3],
-        c.post_range[4], c.post_range[5]);
+        m.width_size, threshold0, threshold1, threshold2, c.pc_x, c.pc_y,
+        c.voxel_x, c.voxel_y, c.post_range[0], c.post_range[1],
+        c.post_range[2], c.post_range[3], c.post_range[4], c.post_range[5]);
     ok(cudaGetLastError(), "decode kernel");
     ok(cudaEventRecord(stop), "record");
     ok(cudaEventSynchronize(stop), "sync");
