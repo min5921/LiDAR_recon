@@ -2,7 +2,7 @@
 
 이 문서는 현재 프로젝트를 처음 보는 사람도 전체 구조를 이해하고, 코드를 읽고, 빌드하고, 같은 결과를 재현할 수 있도록 작성한 통합 매뉴얼이다.
 
-현재 구현은 **Waymo용 CenterPoint PointPillars 추론 구조를 C++/CUDA로 옮긴 단계별 학습 프로젝트**다. Voxelization부터 PFN, Scatter, 전체 RPN, CenterHead, Box Decode, Rotated NMS까지 구현되어 최종 3D bounding box 파일을 만들 수 있다. Waymo derived sensor archive 5프레임의 전체 추론, GT 평가, 단계별 독립 수치 검증, False Negative 원인 분석도 완료했다. 현재 남은 큰 작업은 더 많은 프레임의 통계 평가, Waymo 공식 metric 연동, 그리고 GPU 메모리 안에서 단계를 직접 연결하는 최적화다.
+현재 구현은 **Waymo용 CenterPoint PointPillars 추론 구조를 C++/CUDA로 옮긴 단계별 학습 프로젝트**다. Voxelization부터 PFN, Scatter, 전체 RPN, CenterHead, Box Decode, Rotated NMS까지 구현되어 최종 3D bounding box 파일을 만들 수 있다. Waymo derived sensor archive 198프레임의 전체 추론, GT 평가, 단계별 독립 수치 검증, False Negative와 threshold 운영점 분석도 완료했다. 현재 남은 큰 작업은 여러 validation segment와 Waymo 공식 metric 연동, 그리고 GPU 메모리 안에서 단계를 직접 연결하는 최적화다.
 
 ## 이 문서를 읽는 방법
 
@@ -158,8 +158,8 @@ LiDAR points
 [완료] 10 CenterHead GT peak 독립 수치 검증
 [완료] 11 raw/tanh 전처리 및 PFN~Head 단계 비교
 [완료] 12 공식 CCW geometry 검증과 FN 원인 분석
-[다음] 수백 프레임 threshold/거리/point-count 통계 평가
-[다음] Waymo 공식 metric 입력과 평가 도구 연결
+[완료] 13 Waymo 198프레임 threshold/거리/point-count 통계 평가
+[다음] 여러 validation segment와 Waymo 공식 metric 평가
 [다음] 단계 사이 Host-GPU 복사 제거와 kernel 최적화
 ```
 
@@ -271,6 +271,7 @@ my project/
 ├─ 10_head_validation_project/    GT 위치의 CenterHead 출력 검증
 ├─ 11_reference_comparison_project/ raw/tanh 및 단계별 독립 비교
 ├─ 12_waymo_fn_analysis_project/  FN별 점군/heatmap/geometry 원인 분석
+├─ 13_waymo_operating_point_project/ 198프레임 운영점과 recall 구간 분석
 ├─ 000_waymo_training_project/    Waymo 변환/학습 준비
 └─ CENTERPOINT_CPP_STUDY_MANUAL.md
 ```
@@ -1504,10 +1505,18 @@ CenterPoint prediction은 `-yaw - pi/2`로 변환한다.
 `LOW_MODEL_SCORE` 9개와 `LOW_POINT_COUNT` 3개로 분류됐다. 상세 입력 점 수,
 heatmap score, IoU와 BEV 그림은 `12_waymo_fn_analysis_project`에서 확인한다.
 
-### 다음 1: 대규모 통계와 공식 평가
+### 완료 11: 198프레임 Operating Point 분석
 
-수백 프레임에서 score threshold, 거리, GT 내부 point count 구간별
-precision/recall을 계산한 뒤 Waymo 공식 metric 형식으로 확장한다.
+최소 threshold `0.05`로 segment의 198프레임을 실행한 뒤 더 높은 threshold를
+재추론 없이 비교했다. 최대 F1 운영점은 `0.30`, precision `0.80` 이상에서
+최대 recall 운영점은 `0.25`였다. 거리와 GT 내부 point 수가 recall을 결정하는
+가장 큰 요인이라는 것도 4,337개 GT에서 확인했다.
+
+### 다음 1: 여러 Segment와 공식 평가
+
+현재 한 training segment에서 얻은 결과를 여러 validation segment로 확장한다.
+pedestrian와 cyclist GT를 충분히 확보한 뒤 class-wise threshold와 Waymo 공식
+mAP/mAPH를 계산한다.
 
 ### 다음 2: 단일 GPU 파이프라인 최적화
 
@@ -1644,9 +1653,10 @@ Waymo Scatter: 전체 tensor exact match
 Waymo RPN:     38 layer probe 최대 오차 8.343e-7
 Waymo Head:    GT peak 37개 최대 오차 1.907e-6
 Waymo 평가:   TP 25 / FP 3 / FN 12, evaluator와 독립 geometry 일치
+198-frame threshold study: best F1 0.7470 at score 0.30
+198-frame precision floor: precision 0.8400 / recall 0.6502 at score 0.25
 ```
 
-가장 중요한 다음 작업은 **5프레임 검증을 수백 프레임 통계 평가로 확장하는
-것**이다. threshold를 낮췄을 때 FN이 얼마나 복구되고 FP가 얼마나 늘어나는지,
-거리와 박스 내부 point count에 따라 recall이 어떻게 달라지는지 확인한 뒤
-Waymo 공식 metric과 연결한다.
+가장 중요한 다음 작업은 **한 segment의 198프레임 결과를 여러 validation
+segment로 확장하는 것**이다. class별 GT를 충분히 모아 class-wise threshold를
+검증하고 Waymo 공식 mAP/mAPH와 연결한다.

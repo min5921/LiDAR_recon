@@ -44,6 +44,12 @@ If any value differs, the old frame directory is removed and every pipeline
 stage is recomputed. The aggregate report stores the same information in
 `run_contract` so that raw/tanh comparisons can reject mixed experiments.
 
+대규모 평가에서는 `--compact-output`을 사용하면 GT matching 직후
+`points.bin`과 02~07 중간 tensor를 제거하고 detection, report, manifest만
+남긴다. `--summary-only`는 프레임 진행률과 최종 지표만 출력한다. compact
+결과에서 더 낮은 threshold를 다시 분석하려면 처음 실행 자체를 분석 범위의
+최소 threshold로 만들어야 한다.
+
 ## Export One Frame
 
 ```powershell

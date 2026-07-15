@@ -23,6 +23,11 @@ The current C++ CenterPoint pipeline expects five values per point:
 CenterPoint prediction yaw는 `-yaw - pi/2`로 변환한 뒤 같은 좌표계에서
 rotated BEV IoU를 계산한다.
 
+여러 프레임의 통계만 필요할 때 `--compact-output`은 각 프레임 평가가 끝난
+뒤 02~07 stage와 `points.bin`을 제거한다. `08_detections`, matching report,
+manifest와 로그는 유지되므로 threshold 후속 분석과 실행 출처 검증은 가능하다.
+삭제 함수는 `frame_dir` 바로 아래의 고정된 경로만 허용한다.
+
 So this milestone builds a small bridge:
 
 1. `tools/export_waymo_frame.py` opens one segment zip.

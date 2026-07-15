@@ -16,5 +16,6 @@
 | 10 | CenterHead GT Peak Validation | `10_head_validation_project/IMPLEMENTATION_GUIDE.md` |
 | 11 | 원본 전처리 및 단계별 수치 비교 | `11_reference_comparison_project/IMPLEMENTATION_GUIDE.md` |
 | 12 | Waymo FN 원인 분석 | `12_waymo_fn_analysis_project/IMPLEMENTATION_GUIDE.md` |
+| 13 | Threshold/거리/point-count 운영점 분석 | `13_waymo_operating_point_project/IMPLEMENTATION_GUIDE.md` |
 
 각 문서는 `입출력 -> main 호출 흐름 -> 핵심 반복문 -> memory offset -> 검증 -> 한계` 순서로 실제 코드를 설명한다.

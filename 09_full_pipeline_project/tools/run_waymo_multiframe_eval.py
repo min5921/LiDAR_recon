@@ -88,6 +88,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--cyclist-score-threshold", type=float, default=None)
     parser.add_argument("--match-iou", type=float, default=0.5)
     parser.add_argument("--skip-existing", action="store_true")
+    parser.add_argument(
+        "--compact-output",
+        action="store_true",
+        help="Keep reports and detections, then remove large intermediate tensors.",
+    )
+    parser.add_argument(
+        "--summary-only",
+        action="store_true",
+        help="Print only aggregate metrics instead of the complete report.",
+    )
     return parser.parse_args()
 
 
@@ -320,6 +330,43 @@ def exe(project_root: Path, rel: str) -> str:
     return str(project_root / rel)
 
 
+def full_cache_outputs_present(frame_dir: Path) -> bool:
+    return all(
+        path.exists()
+        for path in [
+            frame_dir / "points.bin",
+            frame_dir / "02_voxel",
+            frame_dir / "03_decorated",
+            frame_dir / "04_pfn",
+            frame_dir / "05_scatter",
+            frame_dir / "06_rpn",
+            frame_dir / "07_head" / "hm.bin",
+        ]
+    )
+
+
+def compact_frame_outputs(frame_dir: Path) -> None:
+    root = frame_dir.resolve()
+    targets = [
+        frame_dir / "points.bin",
+        frame_dir / "02_voxel",
+        frame_dir / "03_decorated",
+        frame_dir / "04_pfn",
+        frame_dir / "05_scatter",
+        frame_dir / "06_rpn",
+        frame_dir / "06_rpn_probe_validation",
+        frame_dir / "07_head",
+    ]
+    for target in targets:
+        resolved = target.resolve()
+        if resolved.parent != root:
+            raise ValueError(f"compact target escaped frame directory: {target}")
+        if target.is_dir():
+            shutil.rmtree(target)
+        elif target.exists():
+            target.unlink()
+
+
 def run_pipeline(
     args: argparse.Namespace,
     frame: str,
@@ -341,6 +388,10 @@ def run_pipeline(
         and decode_config_matches(decode_config, args)
         and preprocessing_config_matches(export_summary, args, frame)
         and cache_manifest_matches(cache_manifest, expected_manifest)
+        and (
+            bool(getattr(args, "compact_output", False))
+            or full_cache_outputs_present(frame_dir)
+        )
     ):
         return detections_csv
 
@@ -785,7 +836,7 @@ def main() -> int:
     all_false_positives: list[dict[str, object]] = []
     all_false_negatives: list[dict[str, object]] = []
 
-    for frame in frames:
+    for frame_index, frame in enumerate(frames, start=1):
         frame_dir = args.output_dir / frame
         if frame_dir.exists() and not args.skip_existing:
             shutil.rmtree(frame_dir)
@@ -807,6 +858,14 @@ def main() -> int:
         (frame_dir / "match_report.json").write_text(
             json.dumps(report, indent=2), encoding="utf-8"
         )
+        if args.compact_output:
+            compact_frame_outputs(frame_dir)
+        if args.summary_only:
+            print(
+                f"[{frame_index}/{len(frames)}] {frame}: "
+                f"TP={report['tp']} FP={report['fp']} FN={report['fn']}",
+                flush=True,
+            )
 
     total_tp = sum(int(row["tp"]) for row in frame_reports)
     total_fp = sum(int(row["fp"]) for row in frame_reports)
@@ -819,6 +878,7 @@ def main() -> int:
         "nms_convention": args.nms_convention,
         "class_score_thresholds": class_thresholds(args),
         "match_iou": args.match_iou,
+        "compact_output": args.compact_output,
         "run_contract": run_contract,
         "total_predictions": sum(int(row["predictions"]) for row in frame_reports),
         "total_labels": sum(int(row["labels"]) for row in frame_reports),
@@ -837,7 +897,24 @@ def main() -> int:
         json.dumps(aggregate, indent=2), encoding="utf-8"
     )
     write_summary_csv(args.output_dir / "frame_summary.csv", frame_reports)
-    print(json.dumps(aggregate, indent=2))
+    if args.summary_only:
+        summary = {
+            "archive": aggregate["archive"],
+            "frames": len(frames),
+            "score_threshold": aggregate["score_threshold"],
+            "nms_iou": aggregate["nms_iou"],
+            "predictions": aggregate["total_predictions"],
+            "labels": aggregate["total_labels"],
+            "tp": aggregate["tp"],
+            "fp": aggregate["fp"],
+            "fn": aggregate["fn"],
+            "precision": aggregate["precision"],
+            "recall": aggregate["recall"],
+            "compact_output": aggregate["compact_output"],
+        }
+        print(json.dumps(summary, indent=2))
+    else:
+        print(json.dumps(aggregate, indent=2))
     return 0
 
 
