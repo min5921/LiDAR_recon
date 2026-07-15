@@ -1,0 +1,242 @@
+{
+  "comparison": "raw intensity vs original CenterPoint tanh intensity",
+  "frames": [
+    "frame_000",
+    "frame_001",
+    "frame_002",
+    "frame_003",
+    "frame_004"
+  ],
+  "comparison_contract": {
+    "passed": true,
+    "raw_intensity_transform": "none",
+    "reference_intensity_transform": "tanh",
+    "archive": "E:\\Waymo_datset\\derived_v1_4_3\\sensor_archives\\train\\segment-10017090168044687777_6380_000_6400_000_with_camera_labels.zip",
+    "frames": [
+      "frame_000",
+      "frame_001",
+      "frame_002",
+      "frame_003",
+      "frame_004"
+    ],
+    "project_files_sha256": "75c07cd17a4949ed22bda1cabf22a396ab9551780145aafa6883ef1e92146081",
+    "weight_files_sha256": "fce6da8d0c579eca8a8cdacb50fe319b8216159be648884a39d976207593048e"
+  },
+  "source_provenance": {
+    "passed": true,
+    "raw_eval_dir": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\waymo_eval_review_pcdet_5frames",
+    "reference_eval_dir": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\waymo_eval_tanh_pcdet_5frames",
+    "weights_root": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\weights_full_novelocity",
+    "rpn_probe_json": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\waymo_eval_tanh_pcdet_5frames\\frame_000\\06_rpn_probe_validation\\rpn_layer_probes.json",
+    "pipeline_manifest": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\waymo_eval_tanh_pcdet_5frames\\frame_000\\pipeline_cache_manifest.json"
+  },
+  "raw_metrics": {
+    "total_predictions": 14,
+    "total_labels": 37,
+    "tp": 10,
+    "fp": 4,
+    "fn": 27,
+    "precision": 0.7142857142857143,
+    "recall": 0.2702702702702703
+  },
+  "reference_metrics": {
+    "total_predictions": 28,
+    "total_labels": 37,
+    "tp": 23,
+    "fp": 5,
+    "fn": 14,
+    "precision": 0.8214285714285714,
+    "recall": 0.6216216216216216
+  },
+  "metric_delta": {
+    "tp": 13,
+    "fp": 1,
+    "fn": -13,
+    "precision": 0.1071428571428571,
+    "recall": 0.3513513513513513
+  },
+  "heatmap_outcomes": {
+    "raw": {
+      "LOW_HEATMAP_SCORE": 25,
+      "DETECTED": 10,
+      "HIGH_HEATMAP_EMITTED_UNMATCHED": 2
+    },
+    "reference": {
+      "DETECTED": 23,
+      "LOW_HEATMAP_SCORE": 12,
+      "HIGH_HEATMAP_EMITTED_UNMATCHED": 2
+    }
+  },
+  "stage_validation": {
+    "comparison_contract_passed": true,
+    "source_provenance_passed": true,
+    "preprocessing_all_frames_passed": true,
+    "pfn_all_frames_passed": true,
+    "pfn_max_abs_diff": 4.649162292480469e-06,
+    "scatter_all_frames_passed": true,
+    "scatter_max_abs_diff": 0.0,
+    "rpn_probes_passed": true,
+    "rpn_probe_count": 38,
+    "rpn_max_abs_diff": 8.343127593790634e-07,
+    "head_gt_peaks_passed": true,
+    "head_gt_peak_count": 37,
+    "head_max_abs_diff": 1.9073486328125e-06
+  },
+  "frame_results": [
+    {
+      "frame": "frame_000",
+      "preprocessing": {
+        "points": 183680,
+        "xyz_equal": true,
+        "elongation_equal": true,
+        "reference_intensity_matches_tanh": true,
+        "raw_intensity_min": 6.341934204101562e-05,
+        "raw_intensity_max": 29.5,
+        "reference_intensity_min": 6.341934204101562e-05,
+        "reference_intensity_max": 1.0,
+        "coordinates_equal": true,
+        "num_points_equal": true
+      },
+      "pfn": {
+        "pillars": 9529,
+        "passed": true,
+        "max_abs_diff": 3.814697265625e-06,
+        "mean_abs_diff": 7.44700727750569e-08
+      },
+      "scatter": {
+        "shape": [
+          1,
+          64,
+          468,
+          468
+        ],
+        "passed": true,
+        "max_abs_diff": 0.0
+      }
+    },
+    {
+      "frame": "frame_001",
+      "preprocessing": {
+        "points": 183408,
+        "xyz_equal": true,
+        "elongation_equal": true,
+        "reference_intensity_matches_tanh": true,
+        "raw_intensity_min": 0.000293731689453125,
+        "raw_intensity_max": 24.75,
+        "reference_intensity_min": 0.000293731689453125,
+        "reference_intensity_max": 1.0,
+        "coordinates_equal": true,
+        "num_points_equal": true
+      },
+      "pfn": {
+        "pillars": 9542,
+        "passed": true,
+        "max_abs_diff": 4.649162292480469e-06,
+        "mean_abs_diff": 7.464280571412019e-08
+      },
+      "scatter": {
+        "shape": [
+          1,
+          64,
+          468,
+          468
+        ],
+        "passed": true,
+        "max_abs_diff": 0.0
+      }
+    },
+    {
+      "frame": "frame_002",
+      "preprocessing": {
+        "points": 182276,
+        "xyz_equal": true,
+        "elongation_equal": true,
+        "reference_intensity_matches_tanh": true,
+        "raw_intensity_min": 8.916854858398438e-05,
+        "raw_intensity_max": 334.0,
+        "reference_intensity_min": 8.916854858398438e-05,
+        "reference_intensity_max": 1.0,
+        "coordinates_equal": true,
+        "num_points_equal": true
+      },
+      "pfn": {
+        "pillars": 9585,
+        "passed": true,
+        "max_abs_diff": 4.291534423828125e-06,
+        "mean_abs_diff": 7.489281728112474e-08
+      },
+      "scatter": {
+        "shape": [
+          1,
+          64,
+          468,
+          468
+        ],
+        "passed": true,
+        "max_abs_diff": 0.0
+      }
+    },
+    {
+      "frame": "frame_003",
+      "preprocessing": {
+        "points": 183651,
+        "xyz_equal": true,
+        "elongation_equal": true,
+        "reference_intensity_matches_tanh": true,
+        "raw_intensity_min": 0.00025177001953125,
+        "raw_intensity_max": 57.5,
+        "reference_intensity_min": 0.00025177001953125,
+        "reference_intensity_max": 1.0,
+        "coordinates_equal": true,
+        "num_points_equal": true
+      },
+      "pfn": {
+        "pillars": 9583,
+        "passed": true,
+        "max_abs_diff": 3.814697265625e-06,
+        "mean_abs_diff": 7.488266362543072e-08
+      },
+      "scatter": {
+        "shape": [
+          1,
+          64,
+          468,
+          468
+        ],
+        "passed": true,
+        "max_abs_diff": 0.0
+      }
+    },
+    {
+      "frame": "frame_004",
+      "preprocessing": {
+        "points": 184307,
+        "xyz_equal": true,
+        "elongation_equal": true,
+        "reference_intensity_matches_tanh": true,
+        "raw_intensity_min": 0.0003185272216796875,
+        "raw_intensity_max": 900.0,
+        "reference_intensity_min": 0.00031852719257585704,
+        "reference_intensity_max": 1.0,
+        "coordinates_equal": true,
+        "num_points_equal": true
+      },
+      "pfn": {
+        "pillars": 9793,
+        "passed": true,
+        "max_abs_diff": 3.814697265625e-06,
+        "mean_abs_diff": 7.539765078945493e-08
+      },
+      "scatter": {
+        "shape": [
+          1,
+          64,
+          468,
+          468
+        ],
+        "passed": true,
+        "max_abs_diff": 0.0
+      }
+    }
+  ]
+}

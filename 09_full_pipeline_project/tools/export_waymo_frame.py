@@ -46,6 +46,12 @@ def parse_args() -> argparse.Namespace:
         help="Drop points whose nlz_flag is not negative.",
     )
     parser.add_argument(
+        "--intensity-transform",
+        choices=["tanh", "none"],
+        default="tanh",
+        help="Waymo CenterPoint uses tanh intensity normalization.",
+    )
+    parser.add_argument(
         "--summary-json",
         type=Path,
         default=None,
@@ -100,6 +106,8 @@ def main() -> int:
                 )
 
     points5 = np.concatenate(arrays, axis=0) if arrays else np.empty((0, 5), dtype="<f4")
+    if args.intensity_transform == "tanh":
+        points5[:, 3] = np.tanh(points5[:, 3])
     args.output_bin.parent.mkdir(parents=True, exist_ok=True)
     points5.astype("<f4", copy=False).tofile(args.output_bin)
 
@@ -108,6 +116,10 @@ def main() -> int:
         "frame": args.frame,
         "output_bin": str(args.output_bin),
         "feature_columns": ["x", "y", "z", "intensity", "elongation"],
+        "intensity_transform": args.intensity_transform,
+        "drop_nlz": args.drop_nlz,
+        "lidars": args.lidars,
+        "returns": args.returns,
         "num_points": int(points5.shape[0]),
         "sources": sources,
         "min": points5.min(axis=0).tolist() if points5.size else None,

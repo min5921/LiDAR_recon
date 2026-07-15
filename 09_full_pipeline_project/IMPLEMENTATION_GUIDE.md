@@ -15,6 +15,10 @@ The current C++ CenterPoint pipeline expects five values per point:
 [x, y, z, intensity, elongation]
 ```
 
+원본 CenterPoint의 Waymo loader는 다섯 feature를 결합하기 전에 intensity에
+`tanh`를 적용한다. `export_waymo_frame.py`의 기본값도 이 규칙을 따른다.
+비교 실험을 위해서만 `--intensity-transform none`을 사용한다.
+
 So this milestone builds a small bridge:
 
 1. `tools/export_waymo_frame.py` opens one segment zip.

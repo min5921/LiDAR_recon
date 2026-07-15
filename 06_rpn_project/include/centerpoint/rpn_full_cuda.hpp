@@ -5,6 +5,7 @@
 namespace centerpoint {
 
 FullRpnResult run_full_rpn_cuda(const HostTensor& input,
-                               const FullRpnWeights& weights);
+                               const FullRpnWeights& weights,
+                               bool collect_probes = false);
 
 }  // namespace centerpoint

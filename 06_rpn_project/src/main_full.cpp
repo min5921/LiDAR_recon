@@ -10,21 +10,32 @@
 #include "centerpoint/rpn_full_cuda.hpp"
 
 int main(int argc, char** argv) {
-    if (argc < 4 || argc > 5) {
+    if (argc < 4 || argc > 6) {
         std::cerr << "usage: " << argv[0]
-                  << " <bev_dump_dir> <weight_dir> <output_dir> [--summary-only]\n";
+                  << " <bev_dump_dir> <weight_dir> <output_dir> "
+                     "[--summary-only] [--probes]\n";
         return 2;
     }
 
     try {
-        const bool write_tensor =
-            !(argc == 5 && std::string(argv[4]) == "--summary-only");
+        bool write_tensor = true;
+        bool collect_probes = false;
+        for (int index = 4; index < argc; ++index) {
+            const std::string option(argv[index]);
+            if (option == "--summary-only") {
+                write_tensor = false;
+            } else if (option == "--probes") {
+                collect_probes = true;
+            } else {
+                throw std::invalid_argument("unknown option: " + option);
+            }
+        }
         const centerpoint::HostTensor input =
             centerpoint::io::read_bev_dump(argv[1]);
         const centerpoint::FullRpnWeights weights =
             centerpoint::io::read_full_rpn_weights(argv[2]);
         const centerpoint::FullRpnResult result =
-            centerpoint::run_full_rpn_cuda(input, weights);
+            centerpoint::run_full_rpn_cuda(input, weights, collect_probes);
         centerpoint::io::write_full_rpn_output(argv[3], result, write_tensor);
 
         std::cout << "input: [1, " << input.channels << ", " << input.height
@@ -42,6 +53,7 @@ int main(int argc, char** argv) {
         std::cout << std::fixed << std::setprecision(3)
                   << "CUDA time: " << result.elapsed_ms << " ms\n";
         std::cout << "tensor written: " << (write_tensor ? "yes" : "no") << "\n";
+        std::cout << "layer probes: " << result.probes.size() << "\n";
         std::cout << "dump: " << argv[3] << "\n";
     } catch (const std::exception& error) {
         std::cerr << "error: " << error.what() << "\n";

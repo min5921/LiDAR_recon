@@ -195,6 +195,12 @@ def validate_frame(
 
 def main() -> int:
     args = parse_args()
+    aggregate = json.loads(
+        (args.eval_dir / "aggregate_report.json").read_text(encoding="utf-8")
+    )
+    run_contract = aggregate.get("run_contract")
+    if not isinstance(run_contract, dict):
+        raise ValueError("aggregate report has no run_contract; rerun the evaluator")
     audit_by_frame = read_audit_cells(args.audit_csv)
     weights = load_weights(args.weight_dir)
     results: list[dict[str, object]] = []
@@ -202,6 +208,11 @@ def main() -> int:
         results.extend(validate_frame(args.eval_dir, frame, rows, weights))
     maximum = max((float(row["abs_diff"]) for row in results), default=0.0)
     report = {
+        "eval_dir": str(args.eval_dir.resolve()),
+        "weight_dir": str(args.weight_dir.resolve()),
+        "audit_csv": str(args.audit_csv.resolve()),
+        "frame_names": sorted(audit_by_frame),
+        "run_contract": run_contract,
         "samples": len(results),
         "frames": len(audit_by_frame),
         "tolerance": args.tolerance,

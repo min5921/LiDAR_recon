@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
+import importlib.metadata
 import json
 import math
 import shutil
@@ -33,6 +35,20 @@ WAYMO_TO_MODEL = {
 }
 DEFAULT_LIDARS = ["TOP", "FRONT", "SIDE_LEFT", "SIDE_RIGHT", "REAR"]
 DEFAULT_RETURNS = ["return1", "return2"]
+CACHE_SCHEMA_VERSION = 1
+RUN_CONTRACT_SCHEMA_VERSION = 1
+PROJECT_DEPENDENCY_FILES = [
+    "02_project/build/Release/centerpoint_voxel_dump.exe",
+    "03_pillar_feature_project/build/Release/centerpoint_decorate_pillars.exe",
+    "04_pfn_project/build/Release/centerpoint_pfn_checkpoint.exe",
+    "05_scatter_project/build/Release/centerpoint_scatter.exe",
+    "06_rpn_project/build_cuda/Release/centerpoint_rpn_full_cuda.exe",
+    "07_center_head_project/build_cuda/Release/centerpoint_head_cuda.exe",
+    "08_decode_project/build_cuda/Release/centerpoint_decode.exe",
+    "09_full_pipeline_project/tools/export_waymo_frame.py",
+    "09_full_pipeline_project/tools/run_waymo_multiframe_eval.py",
+]
+WEIGHT_STAGES = ["04_pfn", "06_rpn", "07_head"]
 
 
 @dataclass(frozen=True)
@@ -58,6 +74,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lidars", nargs="+", default=DEFAULT_LIDARS)
     parser.add_argument("--returns", nargs="+", default=DEFAULT_RETURNS)
     parser.add_argument("--drop-nlz", action="store_true")
+    parser.add_argument(
+        "--intensity-transform",
+        choices=["tanh", "none"],
+        default="tanh",
+        help="Use tanh to match the original Waymo CenterPoint loader.",
+    )
     parser.add_argument("--nms-iou", type=float, default=0.5)
     parser.add_argument("--score-threshold", type=float, default=0.35)
     parser.add_argument("--nms-convention", choices=["current", "pcdet"], default="current")
@@ -111,6 +133,145 @@ def class_thresholds(args: argparse.Namespace) -> list[float] | None:
     return [float(value) for value in values]
 
 
+def canonical_path(path: Path) -> str:
+    return str(path.resolve())
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def file_set_signature(root: Path, relative_paths: list[Path]) -> dict[str, object]:
+    records = []
+    for relative_path in sorted(relative_paths, key=lambda path: path.as_posix()):
+        path = root / relative_path
+        if not path.is_file():
+            raise FileNotFoundError(f"pipeline dependency does not exist: {path}")
+        records.append(
+            {
+                "path": relative_path.as_posix(),
+                "size": path.stat().st_size,
+                "sha256": sha256_file(path),
+            }
+        )
+    encoded = json.dumps(
+        records, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return {
+        "file_count": len(records),
+        "sha256": hashlib.sha256(encoded).hexdigest(),
+    }
+
+
+def pipeline_dependency_signature(args: argparse.Namespace) -> dict[str, object]:
+    project_files = [Path(path) for path in PROJECT_DEPENDENCY_FILES]
+    weight_files = [
+        path.relative_to(args.weights_root)
+        for stage in WEIGHT_STAGES
+        for path in (args.weights_root / stage).rglob("*")
+        if path.is_file()
+    ]
+    if not weight_files:
+        raise FileNotFoundError(f"no weight files found under {args.weights_root}")
+    try:
+        numpy_version = importlib.metadata.version("numpy")
+    except importlib.metadata.PackageNotFoundError:
+        numpy_version = "not-installed"
+    return {
+        "project_root": canonical_path(args.project_root),
+        "weights_root": canonical_path(args.weights_root),
+        "python_executable": canonical_path(Path(sys.executable)),
+        "python_version": sys.version,
+        "numpy_version": numpy_version,
+        "project_files": file_set_signature(args.project_root, project_files),
+        "weight_files": file_set_signature(args.weights_root, weight_files),
+    }
+
+
+def archive_signature(path: Path) -> dict[str, object]:
+    if not path.is_file():
+        raise FileNotFoundError(f"Waymo archive does not exist: {path}")
+    stat = path.stat()
+    return {
+        "path": canonical_path(path),
+        "size": stat.st_size,
+        "modified_time_ns": stat.st_mtime_ns,
+    }
+
+
+def preprocessing_signature(args: argparse.Namespace) -> dict[str, object]:
+    return {
+        "intensity_transform": args.intensity_transform,
+        "drop_nlz": args.drop_nlz,
+        "lidars": list(args.lidars),
+        "returns": list(args.returns),
+    }
+
+
+def decode_signature(args: argparse.Namespace) -> dict[str, object]:
+    return {
+        "nms_iou": args.nms_iou,
+        "score_threshold": args.score_threshold,
+        "nms_convention": args.nms_convention,
+        "class_score_thresholds": class_thresholds(args),
+    }
+
+
+def build_run_contract(
+    args: argparse.Namespace,
+    frames: list[str],
+    archive: dict[str, object],
+    dependencies: dict[str, object],
+) -> dict[str, object]:
+    return {
+        "schema_version": RUN_CONTRACT_SCHEMA_VERSION,
+        "archive": archive,
+        "frames": list(frames),
+        "preprocessing": preprocessing_signature(args),
+        "decode": decode_signature(args),
+        "evaluation": {"match_iou": args.match_iou},
+        "dependencies": dependencies,
+    }
+
+
+def build_pipeline_cache_manifest(
+    args: argparse.Namespace,
+    frame: str,
+    archive: dict[str, object],
+    dependencies: dict[str, object],
+) -> dict[str, object]:
+    return {
+        "schema_version": CACHE_SCHEMA_VERSION,
+        "archive": archive,
+        "frame": frame,
+        "preprocessing": preprocessing_signature(args),
+        "decode": decode_signature(args),
+        "dependencies": dependencies,
+    }
+
+
+def cache_manifest_matches(
+    manifest_path: Path, expected: dict[str, object]
+) -> bool:
+    if not manifest_path.exists():
+        return False
+    try:
+        actual = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return False
+    return actual == expected
+
+
+def write_json_atomic(path: Path, value: dict[str, object]) -> None:
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(value, indent=2), encoding="utf-8")
+    temporary.replace(path)
+
+
 def decode_config_matches(config_path: Path, args: argparse.Namespace) -> bool:
     if not config_path.exists():
         return False
@@ -134,22 +295,58 @@ def decode_config_matches(config_path: Path, args: argparse.Namespace) -> bool:
     return all(abs(float(a) - b) < 1e-6 for a, b in zip(actual, expected_class))
 
 
+def preprocessing_config_matches(
+    summary_path: Path, args: argparse.Namespace, frame: str
+) -> bool:
+    if not summary_path.exists():
+        return False
+    try:
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return False
+    archive = summary.get("archive")
+    return (
+        isinstance(archive, str)
+        and canonical_path(Path(archive)) == canonical_path(args.archive)
+        and summary.get("frame") == frame
+        and summary.get("intensity_transform") == args.intensity_transform
+        and bool(summary.get("drop_nlz", False)) == args.drop_nlz
+        and summary.get("lidars") == args.lidars
+        and summary.get("returns") == args.returns
+    )
+
+
 def exe(project_root: Path, rel: str) -> str:
     return str(project_root / rel)
 
 
-def run_pipeline(args: argparse.Namespace, frame: str, frame_dir: Path) -> Path:
+def run_pipeline(
+    args: argparse.Namespace,
+    frame: str,
+    frame_dir: Path,
+    expected_manifest: dict[str, object],
+) -> Path:
     project = args.project_root
     weights = args.weights_root
     points_bin = frame_dir / "points.bin"
     logs = frame_dir / "logs"
     detections_csv = frame_dir / "08_detections" / "detections.csv"
     decode_config = frame_dir / "08_detections" / "decode_config.json"
+    export_summary = frame_dir / "export_summary.json"
+    cache_manifest = frame_dir / "pipeline_cache_manifest.json"
 
-    if args.skip_existing and detections_csv.exists() and decode_config_matches(
-        decode_config, args
+    if (
+        args.skip_existing
+        and detections_csv.exists()
+        and decode_config_matches(decode_config, args)
+        and preprocessing_config_matches(export_summary, args, frame)
+        and cache_manifest_matches(cache_manifest, expected_manifest)
     ):
         return detections_csv
+
+    if args.skip_existing and frame_dir.exists():
+        shutil.rmtree(frame_dir)
+        frame_dir.mkdir(parents=True)
 
     export_cmd = [
         sys.executable,
@@ -159,7 +356,9 @@ def run_pipeline(args: argparse.Namespace, frame: str, frame_dir: Path) -> Path:
         "--frame",
         frame,
         "--summary-json",
-        str(frame_dir / "export_summary.json"),
+        str(export_summary),
+        "--intensity-transform",
+        args.intensity_transform,
         "--lidars",
         *args.lidars,
         "--returns",
@@ -246,6 +445,7 @@ def run_pipeline(args: argparse.Namespace, frame: str, frame_dir: Path) -> Path:
 
     for step_name, command in steps:
         run_command(command, project, logs / f"{step_name}.log")
+    write_json_atomic(cache_manifest, expected_manifest)
     return detections_csv
 
 
@@ -572,6 +772,10 @@ def main() -> int:
     if not frames:
         raise RuntimeError("no frames selected")
 
+    dependencies = pipeline_dependency_signature(args)
+    archive = archive_signature(args.archive)
+    run_contract = build_run_contract(args, frames, archive, dependencies)
+
     args.output_dir.mkdir(parents=True, exist_ok=True)
     frame_reports: list[dict[str, object]] = []
     all_matches: list[dict[str, object]] = []
@@ -584,7 +788,12 @@ def main() -> int:
             shutil.rmtree(frame_dir)
         frame_dir.mkdir(parents=True, exist_ok=True)
 
-        detections_csv = run_pipeline(args, frame, frame_dir)
+        expected_manifest = build_pipeline_cache_manifest(
+            args, frame, archive, dependencies
+        )
+        detections_csv = run_pipeline(
+            args, frame, frame_dir, expected_manifest
+        )
         preds = read_predictions(detections_csv)
         labels = read_labels(args.archive, frame)
         report = evaluate_frame(frame, preds, labels, args.match_iou)
@@ -607,6 +816,7 @@ def main() -> int:
         "nms_convention": args.nms_convention,
         "class_score_thresholds": class_thresholds(args),
         "match_iou": args.match_iou,
+        "run_contract": run_contract,
         "total_predictions": sum(int(row["predictions"]) for row in frame_reports),
         "total_labels": sum(int(row["labels"]) for row in frame_reports),
         "tp": total_tp,

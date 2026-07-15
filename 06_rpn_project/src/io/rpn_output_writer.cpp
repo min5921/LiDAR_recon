@@ -4,6 +4,7 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <limits>
 #include <stdexcept>
 
@@ -74,6 +75,41 @@ void write_full_rpn_output(const std::filesystem::path& output_dir,
     }
     metadata << "]\n";
     metadata << "}\n";
+
+    if (!result.probes.empty()) {
+        std::ofstream probes(output_dir / "rpn_layer_probes.json");
+        if (!probes) {
+            throw std::runtime_error("failed to open RPN layer probes");
+        }
+        probes << std::setprecision(9);
+        probes << "{\n  \"batch_norm_eps\": 0.001,\n  \"probes\": [\n";
+        for (std::size_t probe_index = 0; probe_index < result.probes.size();
+             ++probe_index) {
+            const auto& probe = result.probes[probe_index];
+            probes << "    {\n"
+                   << "      \"name\": \"" << probe.name << "\",\n"
+                   << "      \"operation\": \"" << probe.operation << "\",\n"
+                   << "      \"input_shape\": [" << probe.input_channels << ", "
+                   << probe.input_height << ", " << probe.input_width << "],\n"
+                   << "      \"output_shape\": [" << probe.output_channels << ", "
+                   << probe.output_height << ", " << probe.output_width << "],\n"
+                   << "      \"kernel_size\": " << probe.kernel_size << ",\n"
+                   << "      \"stride\": " << probe.stride << ",\n"
+                   << "      \"padding\": " << probe.padding << ",\n"
+                   << "      \"output_index\": [" << probe.output_channel << ", "
+                   << probe.output_y << ", " << probe.output_x << "],\n"
+                   << "      \"output_value\": " << probe.output_value << ",\n"
+                   << "      \"input_values\": [";
+            for (std::size_t value_index = 0;
+                 value_index < probe.input_values.size(); ++value_index) {
+                probes << probe.input_values[value_index]
+                       << (value_index + 1 == probe.input_values.size() ? "" : ", ");
+            }
+            probes << "]\n    }"
+                   << (probe_index + 1 == result.probes.size() ? "\n" : ",\n");
+        }
+        probes << "  ]\n}\n";
+    }
 }
 
 }  // namespace centerpoint::io

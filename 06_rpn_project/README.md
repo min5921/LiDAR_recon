@@ -1,5 +1,16 @@
 # 06 RPN CUDA Project
 
+## Layer Probe Validation
+
+`centerpoint_rpn_full_cuda.exe` accepts `--probes` for numeric validation.
+It records two small input/output probes for every Conv and ConvTranspose
+layer in `rpn_layer_probes.json`. Normal inference does not enable this mode.
+
+```powershell
+.\build_cuda\Release\centerpoint_rpn_full_cuda.exe `
+  <bev_dump_dir> <weight_dir> <output_dir> --summary-only --probes
+```
+
 CenterPoint PointPillars RPN의 기본 연산인 `Conv2D -> BatchNorm -> ReLU`를 CUDA로 구현하는 첫 단계다.
 
 현재 마일스톤은 전체 RPN이 아니라, 작은 deterministic tensor를 사용해 CUDA 연산과 NCHW memory layout을 검증한다.

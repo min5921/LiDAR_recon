@@ -486,6 +486,12 @@ def plot_heatmap(
 def main() -> int:
     args = parse_args()
     frames = list_frames(args.eval_dir, args.frames)
+    aggregate = json.loads(
+        (args.eval_dir / "aggregate_report.json").read_text(encoding="utf-8")
+    )
+    run_contract = aggregate.get("run_contract")
+    if not isinstance(run_contract, dict):
+        raise ValueError("aggregate report has no run_contract; rerun the evaluator")
     archive = args.archive if args.archive is not None else infer_archive(args.eval_dir, frames)
     if not archive.is_file():
         raise FileNotFoundError(f"archive does not exist: {archive}")
@@ -559,8 +565,9 @@ def main() -> int:
     write_csv(args.output_dir / "gt_heatmap_audit.csv", audit_rows)
     write_csv(args.output_dir / "top_heatmap_peaks.csv", all_peak_rows)
     summary = {
-        "eval_dir": str(args.eval_dir),
-        "archive": str(archive),
+        "eval_dir": str(args.eval_dir.resolve()),
+        "archive": str(archive.resolve()),
+        "run_contract": run_contract,
         "grid": {
             "shape": [len(CLASS_NAMES), GRID_HEIGHT, GRID_WIDTH],
             "point_cloud_start_xy": [POINT_CLOUD_X, POINT_CLOUD_Y],

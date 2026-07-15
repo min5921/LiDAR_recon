@@ -3,6 +3,7 @@
 #include <cublas_v2.h>
 #include <cuda_runtime.h>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <sstream>
@@ -232,6 +233,57 @@ __global__ void concat_three_nchw_kernel(const float* first,
     }
 }
 
+__global__ void gather_conv_patch_kernel(const float* input,
+                                         float* patch,
+                                         int channels,
+                                         int input_height,
+                                         int input_width,
+                                         int kernel_size,
+                                         int stride,
+                                         int padding,
+                                         int output_y,
+                                         int output_x,
+                                         std::size_t total) {
+    const std::size_t index =
+        static_cast<std::size_t>(blockIdx.x) * blockDim.x + threadIdx.x;
+    if (index >= total) {
+        return;
+    }
+    int position = static_cast<int>(index);
+    const int kernel_x = position % kernel_size;
+    position /= kernel_size;
+    const int kernel_y = position % kernel_size;
+    const int channel = position / kernel_size;
+    const int input_y = output_y * stride + kernel_y - padding;
+    const int input_x = output_x * stride + kernel_x - padding;
+    float value = 0.0F;
+    if (input_y >= 0 && input_y < input_height &&
+        input_x >= 0 && input_x < input_width) {
+        value = input[(static_cast<std::size_t>(channel) * input_height +
+                       input_y) *
+                          input_width +
+                      input_x];
+    }
+    patch[index] = value;
+}
+
+__global__ void gather_deconv_input_kernel(const float* input,
+                                           float* values,
+                                           int channels,
+                                           int input_height,
+                                           int input_width,
+                                           int input_y,
+                                           int input_x) {
+    const int channel = blockIdx.x * blockDim.x + threadIdx.x;
+    if (channel >= channels) {
+        return;
+    }
+    values[channel] =
+        input[(static_cast<std::size_t>(channel) * input_height + input_y) *
+                  input_width +
+              input_x];
+}
+
 int block_count(std::size_t total, int threads) {
     return static_cast<int>((total + threads - 1) / threads);
 }
@@ -339,16 +391,6 @@ DeviceTensor deconv_bn_relu(CublasHandle& handle,
     return output;
 }
 
-DeviceTensor run_block(CublasHandle& handle,
-                       DeviceTensor input,
-                       const std::vector<ConvLayerWeights>& layers,
-                       float epsilon) {
-    for (const ConvLayerWeights& layer : layers) {
-        input = conv_bn_relu(handle, input, layer, epsilon);
-    }
-    return input;
-}
-
 DeviceTensor concatenate(const DeviceTensor& first,
                          const DeviceTensor& second,
                          const DeviceTensor& third) {
@@ -375,10 +417,127 @@ std::array<int, 3> shape_of(const DeviceTensor& tensor) {
     return {tensor.channels, tensor.height, tensor.width};
 }
 
+float copy_scalar(const DeviceTensor& tensor, int channel, int y, int x) {
+    const std::size_t index =
+        (static_cast<std::size_t>(channel) * tensor.height + y) * tensor.width + x;
+    float value = 0.0F;
+    check_cuda(cudaMemcpy(&value, tensor.values.data() + index, sizeof(float),
+                          cudaMemcpyDeviceToHost),
+               "copy RPN probe output");
+    return value;
+}
+
+void append_conv_probe(const DeviceTensor& input,
+                       const DeviceTensor& output,
+                       const ConvLayerWeights& layer,
+                       int sample,
+                       std::vector<RpnLayerProbe>& probes) {
+    RpnLayerProbe probe;
+    probe.name = layer.name;
+    probe.operation = "conv2d";
+    probe.input_channels = input.channels;
+    probe.input_height = input.height;
+    probe.input_width = input.width;
+    probe.output_channels = output.channels;
+    probe.output_height = output.height;
+    probe.output_width = output.width;
+    probe.kernel_size = layer.kernel_size;
+    probe.stride = layer.stride;
+    probe.padding = layer.padding;
+    if (sample == 0) {
+        probe.output_channel = 0;
+        probe.output_y = output.height / 2;
+        probe.output_x = output.width / 2;
+    } else {
+        probe.output_channel = std::min(7, output.channels - 1);
+        probe.output_y = 0;
+        probe.output_x = 0;
+    }
+
+    const std::size_t count =
+        static_cast<std::size_t>(input.channels) * layer.kernel_size *
+        layer.kernel_size;
+    DeviceArray device_patch(count);
+    constexpr int threads = 256;
+    gather_conv_patch_kernel<<<block_count(count, threads), threads>>>(
+        input.values.data(), device_patch.data(), input.channels, input.height,
+        input.width, layer.kernel_size, layer.stride, layer.padding,
+        probe.output_y, probe.output_x, count);
+    check_cuda(cudaGetLastError(), "launch RPN conv probe gather");
+    probe.input_values.resize(count);
+    check_cuda(cudaMemcpy(probe.input_values.data(), device_patch.data(),
+                          count * sizeof(float), cudaMemcpyDeviceToHost),
+               "copy RPN conv probe input");
+    probe.output_value = copy_scalar(
+        output, probe.output_channel, probe.output_y, probe.output_x);
+    probes.push_back(std::move(probe));
+}
+
+void append_deconv_probe(const DeviceTensor& input,
+                         const DeviceTensor& output,
+                         const TransposedConvLayerWeights& layer,
+                         int sample,
+                         std::vector<RpnLayerProbe>& probes) {
+    RpnLayerProbe probe;
+    probe.name = layer.name;
+    probe.operation = "conv_transpose2d";
+    probe.input_channels = input.channels;
+    probe.input_height = input.height;
+    probe.input_width = input.width;
+    probe.output_channels = output.channels;
+    probe.output_height = output.height;
+    probe.output_width = output.width;
+    probe.kernel_size = layer.kernel_size;
+    probe.stride = layer.stride;
+    if (sample == 0) {
+        probe.output_channel = 0;
+        probe.output_y = output.height / 2;
+        probe.output_x = output.width / 2;
+    } else {
+        probe.output_channel = std::min(7, output.channels - 1);
+        probe.output_y = 0;
+        probe.output_x = 0;
+    }
+
+    const int input_y = probe.output_y / layer.stride;
+    const int input_x = probe.output_x / layer.stride;
+    DeviceArray device_values(input.channels);
+    constexpr int threads = 256;
+    gather_deconv_input_kernel<<<block_count(input.channels, threads), threads>>>(
+        input.values.data(), device_values.data(), input.channels, input.height,
+        input.width, input_y, input_x);
+    check_cuda(cudaGetLastError(), "launch RPN deconv probe gather");
+    probe.input_values.resize(input.channels);
+    check_cuda(cudaMemcpy(probe.input_values.data(), device_values.data(),
+                          input.channels * sizeof(float), cudaMemcpyDeviceToHost),
+               "copy RPN deconv probe input");
+    probe.output_value = copy_scalar(
+        output, probe.output_channel, probe.output_y, probe.output_x);
+    probes.push_back(std::move(probe));
+}
+
+DeviceTensor run_block_with_probes(
+    CublasHandle& handle,
+    DeviceTensor input,
+    const std::vector<ConvLayerWeights>& layers,
+    float epsilon,
+    std::vector<RpnLayerProbe>* probes) {
+    for (const ConvLayerWeights& layer : layers) {
+        DeviceTensor output = conv_bn_relu(handle, input, layer, epsilon);
+        if (probes != nullptr) {
+            append_conv_probe(input, output, layer, 0, *probes);
+            append_conv_probe(input, output, layer, 1, *probes);
+        }
+        input = std::move(output);
+    }
+    return input;
+}
+
 }  // namespace
 
 FullRpnResult run_full_rpn_cuda(const HostTensor& input,
-                               const FullRpnWeights& weights) {
+                               const FullRpnWeights& weights,
+                               bool collect_probes) {
     if (input.channels != 64 || input.height != 468 || input.width != 468) {
         throw std::invalid_argument("full RPN expects input shape [1,64,468,468]");
     }
@@ -402,26 +561,43 @@ FullRpnResult run_full_rpn_cuda(const HostTensor& input,
 
     try {
         FullRpnResult result;
+        std::vector<RpnLayerProbe>* probes =
+            collect_probes ? &result.probes : nullptr;
 
-        current = run_block(handle, std::move(current), weights.blocks[0],
-                            weights.batch_norm_eps);
+        current = run_block_with_probes(handle, std::move(current),
+                                        weights.blocks[0],
+                                        weights.batch_norm_eps, probes);
         result.block_shapes[0] = shape_of(current);
         DeviceTensor up0 = conv_bn_relu(handle, current, weights.deblock0,
                                         weights.batch_norm_eps);
+        if (probes != nullptr) {
+            append_conv_probe(current, up0, weights.deblock0, 0, *probes);
+            append_conv_probe(current, up0, weights.deblock0, 1, *probes);
+        }
         result.deblock_shapes[0] = shape_of(up0);
 
-        current = run_block(handle, std::move(current), weights.blocks[1],
-                            weights.batch_norm_eps);
+        current = run_block_with_probes(handle, std::move(current),
+                                        weights.blocks[1],
+                                        weights.batch_norm_eps, probes);
         result.block_shapes[1] = shape_of(current);
         DeviceTensor up1 = deconv_bn_relu(handle, current, weights.deblock1,
                                           weights.batch_norm_eps);
+        if (probes != nullptr) {
+            append_deconv_probe(current, up1, weights.deblock1, 0, *probes);
+            append_deconv_probe(current, up1, weights.deblock1, 1, *probes);
+        }
         result.deblock_shapes[1] = shape_of(up1);
 
-        current = run_block(handle, std::move(current), weights.blocks[2],
-                            weights.batch_norm_eps);
+        current = run_block_with_probes(handle, std::move(current),
+                                        weights.blocks[2],
+                                        weights.batch_norm_eps, probes);
         result.block_shapes[2] = shape_of(current);
         DeviceTensor up2 = deconv_bn_relu(handle, current, weights.deblock2,
                                           weights.batch_norm_eps);
+        if (probes != nullptr) {
+            append_deconv_probe(current, up2, weights.deblock2, 0, *probes);
+            append_deconv_probe(current, up2, weights.deblock2, 1, *probes);
+        }
         result.deblock_shapes[2] = shape_of(up2);
 
         DeviceTensor output = concatenate(up0, up1, up2);

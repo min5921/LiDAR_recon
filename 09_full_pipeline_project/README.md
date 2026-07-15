@@ -20,6 +20,25 @@ The current CenterPoint PointPillars input keeps:
 x, y, z, intensity, elongation
 ```
 
+Waymo intensity is normalized with `tanh(intensity)` by default. This matches
+the original CenterPoint `read_single_waymo()` loader. Use
+`--intensity-transform none` only for an explicit raw-intensity comparison.
+
+## Multi-frame Cache Contract
+
+`run_waymo_multiframe_eval.py --skip-existing` reuses a frame only when its
+`pipeline_cache_manifest.json` matches the current run. The manifest includes:
+
+- archive path, size, and modification time
+- frame name and point preprocessing settings
+- score threshold and NMS settings
+- SHA-256 signatures of the pipeline scripts, executables, and weight files
+- Python and NumPy versions
+
+If any value differs, the old frame directory is removed and every pipeline
+stage is recomputed. The aggregate report stores the same information in
+`run_contract` so that raw/tanh comparisons can reject mixed experiments.
+
 ## Export One Frame
 
 ```powershell

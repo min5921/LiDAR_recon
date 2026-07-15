@@ -1,0 +1,629 @@
+{
+  "probe_json": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\waymo_eval_tanh_pcdet_5frames\\frame_000\\06_rpn_probe_validation\\rpn_layer_probes.json",
+  "weight_dir": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\weights_full_novelocity\\06_rpn",
+  "pipeline_manifest_path": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\waymo_eval_tanh_pcdet_5frames\\frame_000\\pipeline_cache_manifest.json",
+  "pipeline_cache_manifest": {
+    "schema_version": 1,
+    "archive": {
+      "path": "E:\\Waymo_datset\\derived_v1_4_3\\sensor_archives\\train\\segment-10017090168044687777_6380_000_6400_000_with_camera_labels.zip",
+      "size": 1179155823,
+      "modified_time_ns": 1783179714456712700
+    },
+    "frame": "frame_000",
+    "preprocessing": {
+      "intensity_transform": "tanh",
+      "drop_nlz": false,
+      "lidars": [
+        "TOP",
+        "FRONT",
+        "SIDE_LEFT",
+        "SIDE_RIGHT",
+        "REAR"
+      ],
+      "returns": [
+        "return1",
+        "return2"
+      ]
+    },
+    "decode": {
+      "nms_iou": 0.5,
+      "score_threshold": 0.35,
+      "nms_convention": "pcdet",
+      "class_score_thresholds": null
+    },
+    "dependencies": {
+      "project_root": "C:\\Users\\user\\Desktop\\Onechip\\Codex\\my project",
+      "weights_root": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\weights_full_novelocity",
+      "python_executable": "C:\\Users\\user\\anaconda3\\python.exe",
+      "python_version": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]",
+      "numpy_version": "2.1.3",
+      "project_files": {
+        "file_count": 9,
+        "sha256": "75c07cd17a4949ed22bda1cabf22a396ab9551780145aafa6883ef1e92146081"
+      },
+      "weight_files": {
+        "file_count": 154,
+        "sha256": "fce6da8d0c579eca8a8cdacb50fe319b8216159be648884a39d976207593048e"
+      }
+    }
+  },
+  "probes": 38,
+  "passed_probes": 38,
+  "failed_probes": 0,
+  "max_abs_diff": 8.343127593790634e-07,
+  "absolute_tolerance": 0.0002,
+  "relative_tolerance": 0.0002,
+  "passed": true,
+  "results": [
+    {
+      "index": 0,
+      "name": "block0_conv0",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        234,
+        234
+      ],
+      "raw_convolution": 0.0,
+      "expected": 0.2803006172180176,
+      "actual": 0.280300617,
+      "abs_diff": 2.1801760397011094e-10,
+      "passed": true
+    },
+    {
+      "index": 1,
+      "name": "block0_conv0",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": 0.0,
+      "expected": 0.16187435388565063,
+      "actual": 0.161874354,
+      "abs_diff": 1.1434936331156109e-10,
+      "passed": true
+    },
+    {
+      "index": 2,
+      "name": "block0_conv1",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        234,
+        234
+      ],
+      "raw_convolution": 1.5506244897842407,
+      "expected": 0.4227541983127594,
+      "actual": 0.422753364,
+      "abs_diff": 8.343127593790634e-07,
+      "passed": true
+    },
+    {
+      "index": 3,
+      "name": "block0_conv1",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -0.272906631231308,
+      "expected": 0.005443565547466278,
+      "actual": 0.00544359256,
+      "abs_diff": 2.7012533721990084e-08,
+      "passed": true
+    },
+    {
+      "index": 4,
+      "name": "block0_conv2",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        234,
+        234
+      ],
+      "raw_convolution": 0.2938622534275055,
+      "expected": 0.36272627115249634,
+      "actual": 0.362726331,
+      "abs_diff": 5.984750367504788e-08,
+      "passed": true
+    },
+    {
+      "index": 5,
+      "name": "block0_conv2",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": 0.383751779794693,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 6,
+      "name": "block0_conv3",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        234,
+        234
+      ],
+      "raw_convolution": -3.255370616912842,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 7,
+      "name": "block0_conv3",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -0.18885472416877747,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 8,
+      "name": "deblock0",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        234,
+        234
+      ],
+      "raw_convolution": 0.3793109953403473,
+      "expected": 0.5430493950843811,
+      "actual": 0.543049335,
+      "abs_diff": 6.008438113713765e-08,
+      "passed": true
+    },
+    {
+      "index": 9,
+      "name": "deblock0",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -0.25248706340789795,
+      "expected": 0.19570857286453247,
+      "actual": 0.195708618,
+      "abs_diff": 4.513546753015518e-08,
+      "passed": true
+    },
+    {
+      "index": 10,
+      "name": "block1_conv0",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        117,
+        117
+      ],
+      "raw_convolution": -1.0359126329421997,
+      "expected": 0.010412290692329407,
+      "actual": 0.010412246,
+      "abs_diff": 4.469232940673695e-08,
+      "passed": true
+    },
+    {
+      "index": 11,
+      "name": "block1_conv0",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -0.3340862989425659,
+      "expected": 0.405407190322876,
+      "actual": 0.40540719,
+      "abs_diff": 3.2287600371105896e-10,
+      "passed": true
+    },
+    {
+      "index": 12,
+      "name": "block1_conv1",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        117,
+        117
+      ],
+      "raw_convolution": -0.6938191056251526,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 13,
+      "name": "block1_conv1",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": 0.5971751809120178,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 14,
+      "name": "block1_conv2",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        117,
+        117
+      ],
+      "raw_convolution": 0.4152655303478241,
+      "expected": 0.05355863273143768,
+      "actual": 0.0535585806,
+      "abs_diff": 5.213143768056927e-08,
+      "passed": true
+    },
+    {
+      "index": 15,
+      "name": "block1_conv2",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -2.1935172080993652,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 16,
+      "name": "block1_conv3",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        117,
+        117
+      ],
+      "raw_convolution": -0.32702046632766724,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 17,
+      "name": "block1_conv3",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -2.129791736602783,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 18,
+      "name": "block1_conv4",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        117,
+        117
+      ],
+      "raw_convolution": -1.7818750143051147,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 19,
+      "name": "block1_conv4",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -0.09295409917831421,
+      "expected": 0.7564781904220581,
+      "actual": 0.75647819,
+      "abs_diff": 4.2205805517170347e-10,
+      "passed": true
+    },
+    {
+      "index": 20,
+      "name": "block1_conv5",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        117,
+        117
+      ],
+      "raw_convolution": -5.519187927246094,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 21,
+      "name": "block1_conv5",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -0.8136637210845947,
+      "expected": 0.30581900477409363,
+      "actual": 0.305819064,
+      "abs_diff": 5.922590634588332e-08,
+      "passed": true
+    },
+    {
+      "index": 22,
+      "name": "deblock1",
+      "operation": "conv_transpose2d",
+      "output_index": [
+        0,
+        234,
+        234
+      ],
+      "raw_convolution": -0.11876995116472244,
+      "expected": 0.33462241291999817,
+      "actual": 0.334622264,
+      "abs_diff": 1.4891999816635249e-07,
+      "passed": true
+    },
+    {
+      "index": 23,
+      "name": "deblock1",
+      "operation": "conv_transpose2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -0.07810475677251816,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 24,
+      "name": "block2_conv0",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        58,
+        58
+      ],
+      "raw_convolution": -4.386588096618652,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 25,
+      "name": "block2_conv0",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -0.6329323053359985,
+      "expected": 0.6162171363830566,
+      "actual": 0.616217136,
+      "abs_diff": 3.830565864504365e-10,
+      "passed": true
+    },
+    {
+      "index": 26,
+      "name": "block2_conv1",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        58,
+        58
+      ],
+      "raw_convolution": -0.552016019821167,
+      "expected": 0.26240187883377075,
+      "actual": 0.262401789,
+      "abs_diff": 8.98337707555541e-08,
+      "passed": true
+    },
+    {
+      "index": 27,
+      "name": "block2_conv1",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -0.019027411937713623,
+      "expected": 0.4214545488357544,
+      "actual": 0.421454519,
+      "abs_diff": 2.9835754367102396e-08,
+      "passed": true
+    },
+    {
+      "index": 28,
+      "name": "block2_conv2",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        58,
+        58
+      ],
+      "raw_convolution": 5.557489395141602,
+      "expected": 0.055013447999954224,
+      "actual": 0.0550135262,
+      "abs_diff": 7.820004577913098e-08,
+      "passed": true
+    },
+    {
+      "index": 29,
+      "name": "block2_conv2",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -2.3627545833587646,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 30,
+      "name": "block2_conv3",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        58,
+        58
+      ],
+      "raw_convolution": 7.785089492797852,
+      "expected": 2.3385448455810547,
+      "actual": 2.33854461,
+      "abs_diff": 2.3558105466392476e-07,
+      "passed": true
+    },
+    {
+      "index": 31,
+      "name": "block2_conv3",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -0.9126190543174744,
+      "expected": 0.2595500349998474,
+      "actual": 0.259550095,
+      "abs_diff": 6.000015256857338e-08,
+      "passed": true
+    },
+    {
+      "index": 32,
+      "name": "block2_conv4",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        58,
+        58
+      ],
+      "raw_convolution": -3.2923874855041504,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 33,
+      "name": "block2_conv4",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -1.0107450485229492,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 34,
+      "name": "block2_conv5",
+      "operation": "conv2d",
+      "output_index": [
+        0,
+        58,
+        58
+      ],
+      "raw_convolution": -5.95443058013916,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 35,
+      "name": "block2_conv5",
+      "operation": "conv2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": 0.04421955347061157,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 36,
+      "name": "deblock2",
+      "operation": "conv_transpose2d",
+      "output_index": [
+        0,
+        234,
+        234
+      ],
+      "raw_convolution": -0.8930469751358032,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    },
+    {
+      "index": 37,
+      "name": "deblock2",
+      "operation": "conv_transpose2d",
+      "output_index": [
+        7,
+        0,
+        0
+      ],
+      "raw_convolution": -0.6594958305358887,
+      "expected": 0.0,
+      "actual": 0.0,
+      "abs_diff": 0.0,
+      "passed": true
+    }
+  ]
+}

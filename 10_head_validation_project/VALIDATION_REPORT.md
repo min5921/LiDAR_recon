@@ -1,5 +1,10 @@
 # 10 Head Validation 결과
 
+> 후속 검증: `11_reference_comparison_project`에서 원본 Waymo loader의
+> `tanh(intensity)` 누락을 발견했다. 이를 적용한 5프레임 결과는 TP 23,
+> recall 0.6216이며 `LOW_HEATMAP_SCORE`가 25개에서 12개로 감소했다.
+> 이 문서 아래의 수치는 수정 전 raw intensity 실행을 기록한 것이다.
+
 ## 검증 대상
 
 - 평가 입력: `waymo_eval_review_pcdet_5frames`

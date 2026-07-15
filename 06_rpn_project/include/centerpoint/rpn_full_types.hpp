@@ -49,11 +49,31 @@ struct FullRpnWeights {
     float batch_norm_eps = 1.0e-3F;
 };
 
+struct RpnLayerProbe {
+    std::string name;
+    std::string operation;
+    int input_channels = 0;
+    int input_height = 0;
+    int input_width = 0;
+    int output_channels = 0;
+    int output_height = 0;
+    int output_width = 0;
+    int kernel_size = 0;
+    int stride = 0;
+    int padding = 0;
+    int output_channel = 0;
+    int output_y = 0;
+    int output_x = 0;
+    std::vector<float> input_values;
+    float output_value = 0.0F;
+};
+
 struct FullRpnResult {
     HostTensor output;
     float elapsed_ms = 0.0F;
     std::array<std::array<int, 3>, 3> block_shapes{};
     std::array<std::array<int, 3>, 3> deblock_shapes{};
+    std::vector<RpnLayerProbe> probes;
 };
 
 }  // namespace centerpoint

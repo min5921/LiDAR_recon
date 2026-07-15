@@ -38,6 +38,8 @@ python tools/validate_gt_heatmap_reference.py `
 - `gt_peak_reference_validation.json`: GT peak의 NumPy 재계산과 CUDA 출력 오차
 - `frame_*_<class>_heatmap.png`: GT와 상위 peak를 표시한 heatmap
 
+두 JSON 보고서에는 입력 eval의 `run_contract`가 함께 저장된다. 이후 비교기는 이 값으로 같은 폴더에 남아 있던 이전 Head 결과가 섞이지 않았는지 확인한다.
+
 ## 원인 분류
 
 - `DETECTED`: 최종 IoU 매칭까지 성공
