@@ -19,7 +19,7 @@
       "frame_003",
       "frame_004"
     ],
-    "project_files_sha256": "75c07cd17a4949ed22bda1cabf22a396ab9551780145aafa6883ef1e92146081",
+    "project_files_sha256": "5b189a28d2e98cab7e8813b249c6af63b9a9dddf32ce8466cb7985a5fe83a873",
     "weight_files_sha256": "fce6da8d0c579eca8a8cdacb50fe319b8216159be648884a39d976207593048e"
   },
   "source_provenance": {
@@ -33,38 +33,36 @@
   "raw_metrics": {
     "total_predictions": 14,
     "total_labels": 37,
-    "tp": 10,
-    "fp": 4,
-    "fn": 27,
-    "precision": 0.7142857142857143,
-    "recall": 0.2702702702702703
+    "tp": 12,
+    "fp": 2,
+    "fn": 25,
+    "precision": 0.8571428571428571,
+    "recall": 0.32432432432432434
   },
   "reference_metrics": {
     "total_predictions": 28,
     "total_labels": 37,
-    "tp": 23,
-    "fp": 5,
-    "fn": 14,
-    "precision": 0.8214285714285714,
-    "recall": 0.6216216216216216
+    "tp": 25,
+    "fp": 3,
+    "fn": 12,
+    "precision": 0.8928571428571429,
+    "recall": 0.6756756756756757
   },
   "metric_delta": {
     "tp": 13,
     "fp": 1,
     "fn": -13,
-    "precision": 0.1071428571428571,
+    "precision": 0.03571428571428581,
     "recall": 0.3513513513513513
   },
   "heatmap_outcomes": {
     "raw": {
       "LOW_HEATMAP_SCORE": 25,
-      "DETECTED": 10,
-      "HIGH_HEATMAP_EMITTED_UNMATCHED": 2
+      "DETECTED": 12
     },
     "reference": {
-      "DETECTED": 23,
-      "LOW_HEATMAP_SCORE": 12,
-      "HIGH_HEATMAP_EMITTED_UNMATCHED": 2
+      "DETECTED": 25,
+      "LOW_HEATMAP_SCORE": 12
     }
   },
   "stage_validation": {

@@ -2,7 +2,7 @@
 
 이 문서는 현재 프로젝트를 처음 보는 사람도 전체 구조를 이해하고, 코드를 읽고, 빌드하고, 같은 결과를 재현할 수 있도록 작성한 통합 매뉴얼이다.
 
-현재 구현은 **Waymo용 CenterPoint PointPillars 추론 구조를 C++/CUDA로 옮긴 단계별 학습 프로젝트**다. Voxelization부터 PFN, Scatter, 전체 RPN, CenterHead, Box Decode, Rotated NMS까지 구현되어 최종 3D bounding box 파일을 만들 수 있다. 현재 남은 큰 작업은 Waymo TFRecord 입력 변환, 시각화와 정답 기반 평가, 그리고 GPU 메모리 안에서 단계를 직접 연결하는 최적화다.
+현재 구현은 **Waymo용 CenterPoint PointPillars 추론 구조를 C++/CUDA로 옮긴 단계별 학습 프로젝트**다. Voxelization부터 PFN, Scatter, 전체 RPN, CenterHead, Box Decode, Rotated NMS까지 구현되어 최종 3D bounding box 파일을 만들 수 있다. Waymo derived sensor archive 5프레임의 전체 추론, GT 평가, 단계별 독립 수치 검증, False Negative 원인 분석도 완료했다. 현재 남은 큰 작업은 더 많은 프레임의 통계 평가, Waymo 공식 metric 연동, 그리고 GPU 메모리 안에서 단계를 직접 연결하는 최적화다.
 
 ## 이 문서를 읽는 방법
 
@@ -154,8 +154,12 @@ LiDAR points
 [완료] 07 CenterHead CUDA
 [완료] 08 Decode CUDA / Rotated NMS C++
 [완료] 09 Waymo derived sensor archive -> 5-feature point bin bridge
-[다음] Waymo frame을 전체 02~08 파이프라인에 연결
-[다음] 시각화/평가
+[완료] 09 Waymo 5프레임 전체 02~08 실행과 GT 평가
+[완료] 10 CenterHead GT peak 독립 수치 검증
+[완료] 11 raw/tanh 전처리 및 PFN~Head 단계 비교
+[완료] 12 공식 CCW geometry 검증과 FN 원인 분석
+[다음] 수백 프레임 threshold/거리/point-count 통계 평가
+[다음] Waymo 공식 metric 입력과 평가 도구 연결
 [다음] 단계 사이 Host-GPU 복사 제거와 kernel 최적화
 ```
 
@@ -263,7 +267,10 @@ my project/
 ├─ 06_rpn_project/                전체 RPN CUDA
 ├─ 07_center_head_project/        CenterHead CUDA
 ├─ 08_decode_project/             Box Decode + Rotated NMS
-├─ 09_full_pipeline_project/      Waymo 입력 bridge와 전체 연결 준비
+├─ 09_full_pipeline_project/      Waymo 입력 bridge와 02~08 전체 실행
+├─ 10_head_validation_project/    GT 위치의 CenterHead 출력 검증
+├─ 11_reference_comparison_project/ raw/tanh 및 단계별 독립 비교
+├─ 12_waymo_fn_analysis_project/  FN별 점군/heatmap/geometry 원인 분석
 ├─ 000_waymo_training_project/    Waymo 변환/학습 준비
 └─ CENTERPOINT_CPP_STUDY_MANUAL.md
 ```
@@ -1235,6 +1242,18 @@ PFN 연산을 공부하거나 weight 추출을 연습하는 참고 자료로는 
 
 ## 13. Waymo 데이터 준비 상태
 
+현재 Windows C++/CUDA 추론과 검증에 실제 사용한 derived archive:
+
+```text
+E:\Waymo_datset\derived_v1_4_3\sensor_archives\train\
+  segment-10017090168044687777_6380_000_6400_000_with_camera_labels.zip
+```
+
+이 archive는 frame별 6-feature LiDAR bin과 `laser_labels.json`을 이미 포함한다.
+09 exporter가 `nlz_flag`를 제외하고 intensity에 `tanh`를 적용해 모델의
+5-feature 입력을 만든다. 따라서 아래 TFRecord 변환 과정은 **재학습 데이터나
+원본 framework 실행을 준비할 때** 필요한 별도 흐름이다.
+
 현재 training TFRecord:
 
 ```text
@@ -1440,7 +1459,7 @@ NMS post max: 500
 NMS IoU threshold: 0.7
 ```
 
-### 완료 6: Waymo derived sensor archive 입력 bridge
+### 완료 7: Waymo derived sensor archive 입력 bridge
 
 `E:\Waymo_datset\derived_v1_4_3\sensor_archives` 아래의 segment zip은 이미 frame별 lidar bin을 포함한다.
 
@@ -1459,7 +1478,7 @@ schema: [x, y, z, intensity, elongation, nlz_flag]
 
 주의할 점은 C++17 표준 라이브러리에는 zip reader가 없다는 것이다. 그래서 현재는 Python exporter가 zip을 풀고, C++는 추론 파이프라인 입력과 같은 raw float32 bin을 읽는다. 순수 C++ zip 직접 읽기는 나중에 miniz/libzip/libarchive 같은 의존성을 붙여 확장할 수 있다.
 
-### 다음 1: Waymo frame을 전체 파이프라인에 연결
+### 완료 8: Waymo 전체 파이프라인과 GT 평가
 
 ```text
 derived sensor archive zip 읽기
@@ -1469,11 +1488,28 @@ derived sensor archive zip 읽기
 detections.csv 생성
 ```
 
-### 다음 2: 실제 Waymo 결과 시각화와 평가
+09 runner가 위 과정을 5프레임에 자동 적용하고, 같은 class의 rotated BEV IoU
+`>= 0.5`로 TP/FP/FN을 계산한다. Waymo GT는 공식 CCW heading을 사용하고,
+CenterPoint prediction은 `-yaw - pi/2`로 변환한다.
 
-Point cloud 위에 예측 3D box와 정답 box를 함께 표시한다. 이 단계에서 좌표축, box 중심/크기 순서, yaw 부호, class mapping을 눈으로 확인한 뒤 Waymo metric 평가로 넘어간다.
+### 완료 9: 원본 전처리와 단계별 독립 비교
 
-### 다음 3: 단일 GPU 파이프라인 최적화
+원본 loader의 `tanh(intensity)`를 적용하자 5프레임 recall이 `0.3243`에서
+`0.6757`로 상승했다. PFN, Scatter, RPN, CenterHead는 독립 NumPy 계산과
+각각 허용 오차 안에서 일치한다.
+
+### 완료 10: False Negative 원인 분석
+
+수정된 공식 geometry 기준 결과는 `TP=25`, `FP=3`, `FN=12`다. 남은 FN은
+`LOW_MODEL_SCORE` 9개와 `LOW_POINT_COUNT` 3개로 분류됐다. 상세 입력 점 수,
+heatmap score, IoU와 BEV 그림은 `12_waymo_fn_analysis_project`에서 확인한다.
+
+### 다음 1: 대규모 통계와 공식 평가
+
+수백 프레임에서 score threshold, 거리, GT 내부 point count 구간별
+precision/recall을 계산한 뒤 Waymo 공식 metric 형식으로 확장한다.
+
+### 다음 2: 단일 GPU 파이프라인 최적화
 
 단계별 dump를 없애고 `PFN -> Scatter -> RPN -> CenterHead -> Decode`를 device memory에서 직접 연결한다. 현재 측정값은 학습용 독립 실행기의 시간이며 최종 실시간 성능으로 해석하면 안 된다.
 
@@ -1602,6 +1638,15 @@ Scatter:      Python과 bitwise exact match
 RPN CUDA:     선택 CPU scalar reference 통과, 반복 hash 일치
 CenterHead:   선택 CPU reference 최대 오차 4.768e-7
 Decode/NMS:   독립 Python 전체 결과 일치, 최대 오차 6.636e-6
+Waymo preprocessing: 5프레임 exact match
+Waymo PFN:     독립 NumPy 최대 오차 4.649e-6
+Waymo Scatter: 전체 tensor exact match
+Waymo RPN:     38 layer probe 최대 오차 8.343e-7
+Waymo Head:    GT peak 37개 최대 오차 1.907e-6
+Waymo 평가:   TP 25 / FP 3 / FN 12, evaluator와 독립 geometry 일치
 ```
 
-가장 중요한 다음 작업은 **09에서 만든 실제 Waymo frame bin을 02~08 전체 파이프라인에 연결하는 것**이다. 그 frame으로 예측 box를 만들고 Waymo annotation과 함께 시각화해야 모델 품질과 좌표계가 올바른지 판단할 수 있다.
+가장 중요한 다음 작업은 **5프레임 검증을 수백 프레임 통계 평가로 확장하는
+것**이다. threshold를 낮췄을 때 FN이 얼마나 복구되고 FP가 얼마나 늘어나는지,
+거리와 박스 내부 point count에 따라 recall이 어떻게 달라지는지 확인한 뒤
+Waymo 공식 metric과 연결한다.

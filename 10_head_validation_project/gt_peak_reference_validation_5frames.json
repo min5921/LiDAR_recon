@@ -1,8 +1,72 @@
 {
+  "eval_dir": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\waymo_eval_tanh_pcdet_5frames",
+  "weight_dir": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\weights_full_novelocity\\07_head",
+  "audit_csv": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\waymo_head_validation_tanh_5frames\\gt_heatmap_audit.csv",
+  "frame_names": [
+    "frame_000",
+    "frame_001",
+    "frame_002",
+    "frame_003",
+    "frame_004"
+  ],
+  "run_contract": {
+    "schema_version": 1,
+    "archive": {
+      "path": "E:\\Waymo_datset\\derived_v1_4_3\\sensor_archives\\train\\segment-10017090168044687777_6380_000_6400_000_with_camera_labels.zip",
+      "size": 1179155823,
+      "modified_time_ns": 1783179714456712700
+    },
+    "frames": [
+      "frame_000",
+      "frame_001",
+      "frame_002",
+      "frame_003",
+      "frame_004"
+    ],
+    "preprocessing": {
+      "intensity_transform": "tanh",
+      "drop_nlz": false,
+      "lidars": [
+        "TOP",
+        "FRONT",
+        "SIDE_LEFT",
+        "SIDE_RIGHT",
+        "REAR"
+      ],
+      "returns": [
+        "return1",
+        "return2"
+      ]
+    },
+    "decode": {
+      "nms_iou": 0.5,
+      "score_threshold": 0.35,
+      "nms_convention": "pcdet",
+      "class_score_thresholds": null
+    },
+    "evaluation": {
+      "match_iou": 0.5
+    },
+    "dependencies": {
+      "project_root": "C:\\Users\\user\\Desktop\\Onechip\\Codex\\my project",
+      "weights_root": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\weights_full_novelocity",
+      "python_executable": "C:\\Users\\user\\anaconda3\\python.exe",
+      "python_version": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]",
+      "numpy_version": "2.1.3",
+      "project_files": {
+        "file_count": 9,
+        "sha256": "5b189a28d2e98cab7e8813b249c6af63b9a9dddf32ce8466cb7985a5fe83a873"
+      },
+      "weight_files": {
+        "file_count": 154,
+        "sha256": "fce6da8d0c579eca8a8cdacb50fe319b8216159be648884a39d976207593048e"
+      }
+    }
+  },
   "samples": 37,
   "frames": 5,
   "tolerance": 0.0002,
-  "max_abs_diff": 6.67572021484375e-06,
+  "max_abs_diff": 1.9073486328125e-06,
   "passed": true,
   "results": [
     {
@@ -11,11 +75,11 @@
       "class_name": "VEHICLE",
       "gt_x": 31.960473150901407,
       "gt_y": -2.3544329310025205,
-      "cell_x": 335,
-      "cell_y": 225,
-      "expected_logit": -3.098532199859619,
-      "actual_logit": -3.0985326766967773,
-      "abs_diff": 4.76837158203125e-07
+      "cell_x": 332,
+      "cell_y": 226,
+      "expected_logit": 1.0403417348861694,
+      "actual_logit": 1.0403410196304321,
+      "abs_diff": 7.152557373046875e-07
     },
     {
       "frame": "frame_000",
@@ -25,9 +89,9 @@
       "gt_y": -4.386372376280633,
       "cell_x": 370,
       "cell_y": 220,
-      "expected_logit": -1.92995285987854,
-      "actual_logit": -1.9299523830413818,
-      "abs_diff": 4.76837158203125e-07
+      "expected_logit": -1.9314879179000854,
+      "actual_logit": -1.931488037109375,
+      "abs_diff": 1.1920928955078125e-07
     },
     {
       "frame": "frame_000",
@@ -35,11 +99,11 @@
       "class_name": "VEHICLE",
       "gt_x": 19.253654853193666,
       "gt_y": 12.890538864980044,
-      "cell_x": 294,
+      "cell_x": 293,
       "cell_y": 272,
-      "expected_logit": -3.312535047531128,
-      "actual_logit": -3.312534809112549,
-      "abs_diff": 2.384185791015625e-07
+      "expected_logit": 0.05927984043955803,
+      "actual_logit": 0.0592801570892334,
+      "abs_diff": 3.166496753692627e-07
     },
     {
       "frame": "frame_000",
@@ -49,9 +113,9 @@
       "gt_y": 11.809932489726634,
       "cell_x": 94,
       "cell_y": 271,
-      "expected_logit": -0.5140942931175232,
-      "actual_logit": -0.5140942335128784,
-      "abs_diff": 5.960464477539063e-08
+      "expected_logit": 0.727364718914032,
+      "actual_logit": 0.7273656129837036,
+      "abs_diff": 8.940696716308594e-07
     },
     {
       "frame": "frame_000",
@@ -61,9 +125,9 @@
       "gt_y": -4.622602538387582,
       "cell_x": 299,
       "cell_y": 219,
-      "expected_logit": 1.4014697074890137,
-      "actual_logit": 1.4014686346054077,
-      "abs_diff": 1.0728836059570312e-06
+      "expected_logit": 1.3809914588928223,
+      "actual_logit": 1.38099205493927,
+      "abs_diff": 5.960464477539062e-07
     },
     {
       "frame": "frame_000",
@@ -73,9 +137,9 @@
       "gt_y": 15.79713601640833,
       "cell_x": 318,
       "cell_y": 283,
-      "expected_logit": 0.8275333642959595,
-      "actual_logit": 0.8275324106216431,
-      "abs_diff": 9.5367431640625e-07
+      "expected_logit": 1.0684773921966553,
+      "actual_logit": 1.068475604057312,
+      "abs_diff": 1.7881393432617188e-06
     },
     {
       "frame": "frame_000",
@@ -85,9 +149,9 @@
       "gt_y": 15.552911894184945,
       "cell_x": 170,
       "cell_y": 281,
-      "expected_logit": -1.8247807025909424,
-      "actual_logit": -1.8247805833816528,
-      "abs_diff": 1.1920928955078125e-07
+      "expected_logit": -1.8430490493774414,
+      "actual_logit": -1.8430496454238892,
+      "abs_diff": 5.960464477539062e-07
     },
     {
       "frame": "frame_001",
@@ -95,11 +159,11 @@
       "class_name": "VEHICLE",
       "gt_x": 31.398161404554912,
       "gt_y": -2.6380244626361673,
-      "cell_x": 334,
-      "cell_y": 224,
-      "expected_logit": -3.3909718990325928,
-      "actual_logit": -3.3909718990325928,
-      "abs_diff": 0.0
+      "cell_x": 330,
+      "cell_y": 225,
+      "expected_logit": 0.8827910423278809,
+      "actual_logit": 0.8827906847000122,
+      "abs_diff": 3.5762786865234375e-07
     },
     {
       "frame": "frame_001",
@@ -109,9 +173,9 @@
       "gt_y": -4.7781986216359655,
       "cell_x": 368,
       "cell_y": 220,
-      "expected_logit": -2.3833019733428955,
-      "actual_logit": -2.3833022117614746,
-      "abs_diff": 2.384185791015625e-07
+      "expected_logit": -2.3832411766052246,
+      "actual_logit": -2.383241891860962,
+      "abs_diff": 7.152557373046875e-07
     },
     {
       "frame": "frame_001",
@@ -119,11 +183,11 @@
       "class_name": "VEHICLE",
       "gt_x": 18.827513345115676,
       "gt_y": 12.720390883108848,
-      "cell_x": 290,
-      "cell_y": 274,
-      "expected_logit": -9.906091690063477,
-      "actual_logit": -9.906094551086426,
-      "abs_diff": 2.86102294921875e-06
+      "cell_x": 292,
+      "cell_y": 272,
+      "expected_logit": 0.7192488312721252,
+      "actual_logit": 0.7192479372024536,
+      "abs_diff": 8.940696716308594e-07
     },
     {
       "frame": "frame_001",
@@ -131,11 +195,11 @@
       "class_name": "VEHICLE",
       "gt_x": -44.79701869716132,
       "gt_y": 12.21650044078524,
-      "cell_x": 92,
+      "cell_x": 93,
       "cell_y": 272,
-      "expected_logit": -4.5217766761779785,
-      "actual_logit": -4.52177619934082,
-      "abs_diff": 4.76837158203125e-07
+      "expected_logit": 1.642989993095398,
+      "actual_logit": 1.6429897546768188,
+      "abs_diff": 2.384185791015625e-07
     },
     {
       "frame": "frame_001",
@@ -145,9 +209,9 @@
       "gt_y": -4.805261498539039,
       "cell_x": 297,
       "cell_y": 218,
-      "expected_logit": 1.1841168403625488,
-      "actual_logit": 1.1841179132461548,
-      "abs_diff": 1.0728836059570312e-06
+      "expected_logit": 1.1899468898773193,
+      "actual_logit": 1.1899467706680298,
+      "abs_diff": 1.1920928955078125e-07
     },
     {
       "frame": "frame_001",
@@ -157,9 +221,9 @@
       "gt_y": 15.56002399762474,
       "cell_x": 316,
       "cell_y": 282,
-      "expected_logit": 1.5059731006622314,
-      "actual_logit": 1.505972981452942,
-      "abs_diff": 1.1920928955078125e-07
+      "expected_logit": 0.8243771195411682,
+      "actual_logit": 0.8243776559829712,
+      "abs_diff": 5.364418029785156e-07
     },
     {
       "frame": "frame_001",
@@ -169,9 +233,9 @@
       "gt_y": 15.746423715885612,
       "cell_x": 169,
       "cell_y": 282,
-      "expected_logit": -1.449353575706482,
-      "actual_logit": -1.449353575706482,
-      "abs_diff": 0.0
+      "expected_logit": -1.4791089296340942,
+      "actual_logit": -1.4791085720062256,
+      "abs_diff": 3.5762786865234375e-07
     },
     {
       "frame": "frame_002",
@@ -181,9 +245,9 @@
       "gt_y": -2.9129232167597365,
       "cell_x": 328,
       "cell_y": 225,
-      "expected_logit": -6.4186482429504395,
-      "actual_logit": -6.418647289276123,
-      "abs_diff": 9.5367431640625e-07
+      "expected_logit": 0.7249400019645691,
+      "actual_logit": 0.7249399423599243,
+      "abs_diff": 5.960464477539063e-08
     },
     {
       "frame": "frame_002",
@@ -193,9 +257,9 @@
       "gt_y": -5.158664515516648,
       "cell_x": 367,
       "cell_y": 218,
-      "expected_logit": -2.6250696182250977,
-      "actual_logit": -2.6250698566436768,
-      "abs_diff": 2.384185791015625e-07
+      "expected_logit": -2.6260733604431152,
+      "actual_logit": -2.6260738372802734,
+      "abs_diff": 4.76837158203125e-07
     },
     {
       "frame": "frame_002",
@@ -203,11 +267,11 @@
       "class_name": "VEHICLE",
       "gt_x": 18.33836358495546,
       "gt_y": 12.555187590043715,
-      "cell_x": 292,
+      "cell_x": 290,
       "cell_y": 271,
-      "expected_logit": -4.2623677253723145,
-      "actual_logit": -4.262365818023682,
-      "abs_diff": 1.9073486328125e-06
+      "expected_logit": 0.9129841327667236,
+      "actual_logit": 0.9129840135574341,
+      "abs_diff": 1.1920928955078125e-07
     },
     {
       "frame": "frame_002",
@@ -215,11 +279,11 @@
       "class_name": "VEHICLE",
       "gt_x": -45.289244052790764,
       "gt_y": 12.614587969381319,
-      "cell_x": 91,
+      "cell_x": 92,
       "cell_y": 273,
-      "expected_logit": -0.3429308235645294,
-      "actual_logit": -0.3429309129714966,
-      "abs_diff": 8.940696716308594e-08
+      "expected_logit": 0.9556601047515869,
+      "actual_logit": 0.9556595087051392,
+      "abs_diff": 5.960464477539062e-07
     },
     {
       "frame": "frame_002",
@@ -229,9 +293,9 @@
       "gt_y": -4.981265351303591,
       "cell_x": 295,
       "cell_y": 218,
-      "expected_logit": -0.03476785868406296,
-      "actual_logit": -0.0347672700881958,
-      "abs_diff": 5.885958671569824e-07
+      "expected_logit": 1.243557095527649,
+      "actual_logit": 1.2435563802719116,
+      "abs_diff": 7.152557373046875e-07
     },
     {
       "frame": "frame_002",
@@ -240,10 +304,10 @@
       "gt_x": 26.10525455620791,
       "gt_y": 15.329235277835323,
       "cell_x": 315,
-      "cell_y": 282,
-      "expected_logit": -0.6516819000244141,
-      "actual_logit": -0.6516814231872559,
-      "abs_diff": 4.76837158203125e-07
+      "cell_y": 281,
+      "expected_logit": 1.383039116859436,
+      "actual_logit": 1.383039116859436,
+      "abs_diff": 0.0
     },
     {
       "frame": "frame_002",
@@ -253,9 +317,9 @@
       "gt_y": 15.936121967828512,
       "cell_x": 168,
       "cell_y": 283,
-      "expected_logit": -0.7278053164482117,
-      "actual_logit": -0.7278052568435669,
-      "abs_diff": 5.960464477539063e-08
+      "expected_logit": -0.7627726793289185,
+      "actual_logit": -0.7627728581428528,
+      "abs_diff": 1.7881393432617188e-07
     },
     {
       "frame": "frame_003",
@@ -263,10 +327,10 @@
       "class_name": "VEHICLE",
       "gt_x": 30.154010823531507,
       "gt_y": -3.1596208959945216,
-      "cell_x": 330,
-      "cell_y": 222,
-      "expected_logit": -4.699398994445801,
-      "actual_logit": -4.699399471282959,
+      "cell_x": 327,
+      "cell_y": 224,
+      "expected_logit": 0.6273895502090454,
+      "actual_logit": 0.6273900270462036,
       "abs_diff": 4.76837158203125e-07
     },
     {
@@ -277,9 +341,9 @@
       "gt_y": -5.499493091969271,
       "cell_x": 363,
       "cell_y": 216,
-      "expected_logit": -1.9392424821853638,
-      "actual_logit": -1.9392428398132324,
-      "abs_diff": 3.5762786865234375e-07
+      "expected_logit": -1.9530725479125977,
+      "actual_logit": -1.9530737400054932,
+      "abs_diff": 1.1920928955078125e-06
     },
     {
       "frame": "frame_003",
@@ -287,11 +351,11 @@
       "class_name": "VEHICLE",
       "gt_x": 17.83933167262694,
       "gt_y": 12.409462935720512,
-      "cell_x": 288,
-      "cell_y": 272,
-      "expected_logit": -2.6996757984161377,
-      "actual_logit": -2.699676036834717,
-      "abs_diff": 2.384185791015625e-07
+      "cell_x": 289,
+      "cell_y": 270,
+      "expected_logit": 0.796297550201416,
+      "actual_logit": 0.7962981462478638,
+      "abs_diff": 5.960464477539062e-07
     },
     {
       "frame": "frame_003",
@@ -300,10 +364,10 @@
       "gt_x": -45.78676173466101,
       "gt_y": 12.968549238115884,
       "cell_x": 90,
-      "cell_y": 275,
-      "expected_logit": 0.17947186529636383,
-      "actual_logit": 0.17947185039520264,
-      "abs_diff": 1.4901161193847656e-08
+      "cell_y": 274,
+      "expected_logit": 1.067954182624817,
+      "actual_logit": 1.0679537057876587,
+      "abs_diff": 4.76837158203125e-07
     },
     {
       "frame": "frame_003",
@@ -313,9 +377,9 @@
       "gt_y": -5.136658856699796,
       "cell_x": 293,
       "cell_y": 217,
-      "expected_logit": 1.3185570240020752,
-      "actual_logit": 1.3185559511184692,
-      "abs_diff": 1.0728836059570312e-06
+      "expected_logit": 1.300642967224121,
+      "actual_logit": 1.3006428480148315,
+      "abs_diff": 1.1920928955078125e-07
     },
     {
       "frame": "frame_003",
@@ -325,9 +389,9 @@
       "gt_y": 15.124515074548981,
       "cell_x": 313,
       "cell_y": 281,
-      "expected_logit": 1.7626135349273682,
-      "actual_logit": 1.7626136541366577,
-      "abs_diff": 1.1920928955078125e-07
+      "expected_logit": 1.4878555536270142,
+      "actual_logit": 1.487855076789856,
+      "abs_diff": 4.76837158203125e-07
     },
     {
       "frame": "frame_003",
@@ -337,9 +401,9 @@
       "gt_y": 16.10382169368131,
       "cell_x": 166,
       "cell_y": 283,
-      "expected_logit": -1.4320400953292847,
-      "actual_logit": -1.432040810585022,
-      "abs_diff": 7.152557373046875e-07
+      "expected_logit": -1.5158485174179077,
+      "actual_logit": -1.515848994255066,
+      "abs_diff": 4.76837158203125e-07
     },
     {
       "frame": "frame_004",
@@ -347,11 +411,11 @@
       "class_name": "VEHICLE",
       "gt_x": 29.546898993095738,
       "gt_y": -3.3779696333913307,
-      "cell_x": 326,
-      "cell_y": 225,
-      "expected_logit": -8.488547325134277,
-      "actual_logit": -8.488540649414062,
-      "abs_diff": 6.67572021484375e-06
+      "cell_x": 325,
+      "cell_y": 223,
+      "expected_logit": 0.72402024269104,
+      "actual_logit": 0.7240208387374878,
+      "abs_diff": 5.960464477539062e-07
     },
     {
       "frame": "frame_004",
@@ -361,8 +425,8 @@
       "gt_y": -5.800606096241609,
       "cell_x": 363,
       "cell_y": 216,
-      "expected_logit": -1.3771804571151733,
-      "actual_logit": -1.377180576324463,
+      "expected_logit": -1.382112741470337,
+      "actual_logit": -1.3821128606796265,
       "abs_diff": 1.1920928955078125e-07
     },
     {
@@ -373,9 +437,9 @@
       "gt_y": 12.284029006830679,
       "cell_x": 287,
       "cell_y": 270,
-      "expected_logit": -0.875897228717804,
-      "actual_logit": -0.8758962154388428,
-      "abs_diff": 1.0132789611816406e-06
+      "expected_logit": 0.980073869228363,
+      "actual_logit": 0.9800742864608765,
+      "abs_diff": 4.172325134277344e-07
     },
     {
       "frame": "frame_004",
@@ -385,9 +449,9 @@
       "gt_y": 13.279013892593866,
       "cell_x": 88,
       "cell_y": 276,
-      "expected_logit": 0.919985294342041,
-      "actual_logit": 0.9199844598770142,
-      "abs_diff": 8.344650268554688e-07
+      "expected_logit": 0.9262101054191589,
+      "actual_logit": 0.9262100458145142,
+      "abs_diff": 5.960464477539063e-08
     },
     {
       "frame": "frame_004",
@@ -396,10 +460,10 @@
       "gt_x": 35.3669405692724,
       "gt_y": -10.545841895931517,
       "cell_x": 343,
-      "cell_y": 201,
-      "expected_logit": -4.463776588439941,
-      "actual_logit": -4.463775634765625,
-      "abs_diff": 9.5367431640625e-07
+      "cell_y": 203,
+      "expected_logit": -3.1566686630249023,
+      "actual_logit": -3.1566686630249023,
+      "abs_diff": 0.0
     },
     {
       "frame": "frame_004",
@@ -407,11 +471,11 @@
       "class_name": "VEHICLE",
       "gt_x": 18.723405741151282,
       "gt_y": -5.27098003689207,
-      "cell_x": 291,
+      "cell_x": 292,
       "cell_y": 217,
-      "expected_logit": -1.7712161540985107,
-      "actual_logit": -1.771215558052063,
-      "abs_diff": 5.960464477539062e-07
+      "expected_logit": 0.9650387167930603,
+      "actual_logit": 0.9650391340255737,
+      "abs_diff": 4.172325134277344e-07
     },
     {
       "frame": "frame_004",
@@ -421,9 +485,9 @@
       "gt_y": -9.637364605812763,
       "cell_x": 419,
       "cell_y": 205,
-      "expected_logit": -4.58289909362793,
-      "actual_logit": -4.582899570465088,
-      "abs_diff": 4.76837158203125e-07
+      "expected_logit": -4.582868576049805,
+      "actual_logit": -4.582866668701172,
+      "abs_diff": 1.9073486328125e-06
     },
     {
       "frame": "frame_004",
@@ -433,9 +497,9 @@
       "gt_y": 14.946614143676925,
       "cell_x": 312,
       "cell_y": 280,
-      "expected_logit": 1.563778281211853,
-      "actual_logit": 1.5637785196304321,
-      "abs_diff": 2.384185791015625e-07
+      "expected_logit": 1.5035831928253174,
+      "actual_logit": 1.5035837888717651,
+      "abs_diff": 5.960464477539062e-07
     },
     {
       "frame": "frame_004",
@@ -445,9 +509,9 @@
       "gt_y": 16.25009849842354,
       "cell_x": 165,
       "cell_y": 283,
-      "expected_logit": -1.71553635597229,
-      "actual_logit": -1.7155368328094482,
-      "abs_diff": 4.76837158203125e-07
+      "expected_logit": -1.7150030136108398,
+      "actual_logit": -1.7150026559829712,
+      "abs_diff": 3.5762786865234375e-07
     }
   ]
 }

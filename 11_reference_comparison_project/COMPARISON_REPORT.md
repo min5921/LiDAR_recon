@@ -6,9 +6,9 @@
 
 | 입력 intensity | Prediction | TP | FP | FN | Precision | Recall |
 |---|---:|---:|---:|---:|---:|---:|
-| Raw | 14 | 10 | 4 | 27 | 0.7143 | 0.2703 |
-| `tanh(intensity)` | 28 | 23 | 5 | 14 | 0.8214 | 0.6216 |
-| 변화 | +14 | +13 | +1 | -13 | +0.1071 | +0.3514 |
+| Raw | 14 | 12 | 2 | 25 | 0.8571 | 0.3243 |
+| `tanh(intensity)` | 28 | 25 | 3 | 12 | 0.8929 | 0.6757 |
+| 변화 | +14 | +13 | +1 | -13 | +0.0357 | +0.3514 |
 
 원본 전처리 적용 후 TP가 13개 늘고 recall이 약 35.1%p 상승했다. FP 증가는 1개뿐이며 precision도 상승했다.
 
@@ -16,9 +16,9 @@
 
 | 결과 | Raw | tanh |
 |---|---:|---:|
-| `DETECTED` | 10 | 23 |
+| `DETECTED` | 12 | 25 |
 | `LOW_HEATMAP_SCORE` | 25 | 12 |
-| `HIGH_HEATMAP_EMITTED_UNMATCHED` | 2 | 2 |
+| `HIGH_HEATMAP_EMITTED_UNMATCHED` | 0 | 0 |
 
 낮은 heatmap GT가 25개에서 12개로 감소했다. Detection TP 증가량 13개와 정확히 대응한다.
 
@@ -38,7 +38,10 @@
 
 현재 C++/CUDA의 PFN, Scatter, RPN, CenterHead 연산은 checkpoint 수식의 독립 NumPy 계산과 모두 일치한다. 이전 낮은 recall의 가장 큰 원인은 Waymo intensity의 `tanh` 정규화 누락이었다.
 
-아직 남은 14개 FN 중 12개는 tanh 적용 후에도 GT 주변 heatmap이 0.35 미만이고, 2개는 박스가 출력됐지만 IoU 0.5에 미달한다. 다음 비교 대상은 원본 Waymo point 생성 과정의 lidar return/NLZ 선택과 remaining GT의 거리·point count 분포다.
+Waymo label을 공식 CCW heading으로 회전하도록 평가기를 수정하자 이전에 IoU
+미달로 보이던 2개가 정상 TP로 바뀌었다. 남은 12개 FN은 9개
+`LOW_MODEL_SCORE`와 3개 `LOW_POINT_COUNT`다. 상세 근거는
+`12_waymo_fn_analysis_project`에 기록했다.
 
 ## 5. 제한 사항
 

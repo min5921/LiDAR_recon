@@ -2,6 +2,11 @@
 
 Generated on 2026-07-10.
 
+> 2026-07-15 correction: Waymo label polygon을 공식 CCW heading으로
+> 회전하도록 평가기를 수정했다. 아래 기본 5프레임 표는 수정 후 값이다.
+> 뒤쪽 threshold sweep의 과거 표는 수정 전 evaluator로 만든 실험 기록이므로
+> 최신 성능 판단에는 11, 12 마일스톤 결과를 사용한다.
+
 ## Purpose
 
 이 문서는 한 프레임 시각화에서 벗어나, 여러 Waymo frame에 대해 현재
@@ -83,11 +88,11 @@ Aggregate result:
 | Frames | 5 |
 | Predictions | 14 |
 | GT labels | 37 |
-| TP | 10 |
-| FP | 4 |
-| FN | 27 |
-| Precision | 0.714 |
-| Recall | 0.270 |
+| TP | 12 |
+| FP | 2 |
+| FN | 25 |
+| Precision | 0.857 |
+| Recall | 0.324 |
 
 Per-frame result:
 
@@ -96,8 +101,8 @@ Per-frame result:
 | frame_000 | 3 | 7 | 3 | 0 | 4 | 1.000 | 0.429 |
 | frame_001 | 2 | 7 | 2 | 0 | 5 | 1.000 | 0.286 |
 | frame_002 | 2 | 7 | 2 | 0 | 5 | 1.000 | 0.286 |
-| frame_003 | 3 | 7 | 2 | 1 | 5 | 0.667 | 0.286 |
-| frame_004 | 4 | 9 | 1 | 3 | 8 | 0.250 | 0.111 |
+| frame_003 | 3 | 7 | 3 | 0 | 4 | 1.000 | 0.429 |
+| frame_004 | 4 | 9 | 2 | 2 | 7 | 0.500 | 0.222 |
 
 Output files:
 

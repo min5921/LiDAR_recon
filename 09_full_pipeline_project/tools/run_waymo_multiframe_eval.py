@@ -517,8 +517,8 @@ def box_dict(box: Box) -> dict[str, float | str]:
 
 
 def geometry_errors(pred: Box, gt: Box) -> dict[str, float]:
-    # CenterPoint decoded yaw uses the prediction convention. Waymo labels use
-    # the label convention handled in corners(), so keep both values visible.
+    # CenterPoint decoded yaw uses the prediction convention. Convert it to the
+    # official Waymo CCW heading before comparing it with the label.
     pred_yaw_as_waymo = -pred.yaw - math.pi / 2.0
     return {
         "center_distance_m": center_distance(pred, gt),
@@ -532,21 +532,24 @@ def geometry_errors(pred: Box, gt: Box) -> dict[str, float]:
 
 
 def corners(box: Box) -> list[tuple[float, float]]:
-    if box.convention == "waymo_label":
-        half_x = box.dy / 2.0
-        half_y = box.dx / 2.0
-    else:
-        half_x = box.dx / 2.0
-        half_y = box.dy / 2.0
+    # Both tensors store width in dx and length in dy. Waymo rotates the length
+    # axis counter-clockwise; decoded CenterPoint yaw needs one conversion.
+    half_x = box.dy / 2.0
+    half_y = box.dx / 2.0
+    heading = (
+        box.yaw
+        if box.convention == "waymo_label"
+        else -box.yaw - math.pi / 2.0
+    )
     local = [
         (half_x, half_y),
         (half_x, -half_y),
         (-half_x, -half_y),
         (-half_x, half_y),
     ]
-    c = math.cos(box.yaw)
-    s = math.sin(box.yaw)
-    return [(box.x + lx * c + ly * s, box.y - lx * s + ly * c) for lx, ly in local]
+    c = math.cos(heading)
+    s = math.sin(heading)
+    return [(box.x + lx * c - ly * s, box.y + lx * s + ly * c) for lx, ly in local]
 
 
 def signed_area(poly: Iterable[tuple[float, float]]) -> float:

@@ -2,6 +2,10 @@
 
 Generated on 2026-07-12.
 
+> 2026-07-15 correction: 기존 evaluator가 Waymo label heading을 반대
+> 방향으로 회전한 문제를 수정했다. all-LiDAR 두 행은 수정 후 지표이며,
+> TOP-only 행은 당시 전처리 비교를 남긴 historical 값이다.
+
 ## Purpose
 
 This audit checks whether the poor visual result is mainly caused by:
@@ -63,9 +67,9 @@ match IoU: 0.5
 
 | Run | Points | Dropped by NLZ | Predictions | TP | FP | FN | Precision | Recall |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| all LiDAR + both returns | 917,322 | 0 | 14 | 10 | 4 | 27 | 0.714 | 0.270 |
-| all LiDAR + both returns + drop NLZ | 917,322 | 0 | 14 | 10 | 4 | 27 | 0.714 | 0.270 |
-| TOP return1 only | 768,040 | 0 | 12 | 8 | 4 | 29 | 0.667 | 0.216 |
+| all LiDAR + both returns | 917,322 | 0 | 14 | 12 | 2 | 25 | 0.857 | 0.324 |
+| all LiDAR + both returns + drop NLZ | 917,322 | 0 | 14 | 12 | 2 | 25 | 0.857 | 0.324 |
+| TOP return1 only (historical) | 768,040 | 0 | 12 | 8 | 4 | 29 | 0.667 | 0.216 |
 
 Interpretation:
 

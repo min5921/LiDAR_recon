@@ -19,6 +19,10 @@ The current C++ CenterPoint pipeline expects five values per point:
 `tanh`를 적용한다. `export_waymo_frame.py`의 기본값도 이 규칙을 따른다.
 비교 실험을 위해서만 `--intensity-transform none`을 사용한다.
 
+평가할 때 Waymo label heading은 공식 반시계 방향(CCW)을 그대로 사용한다.
+CenterPoint prediction yaw는 `-yaw - pi/2`로 변환한 뒤 같은 좌표계에서
+rotated BEV IoU를 계산한다.
+
 So this milestone builds a small bridge:
 
 1. `tools/export_waymo_frame.py` opens one segment zip.

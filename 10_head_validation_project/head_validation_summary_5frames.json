@@ -1,6 +1,60 @@
 {
-  "eval_dir": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\waymo_eval_review_pcdet_5frames",
+  "eval_dir": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\waymo_eval_tanh_pcdet_5frames",
   "archive": "E:\\Waymo_datset\\derived_v1_4_3\\sensor_archives\\train\\segment-10017090168044687777_6380_000_6400_000_with_camera_labels.zip",
+  "run_contract": {
+    "schema_version": 1,
+    "archive": {
+      "path": "E:\\Waymo_datset\\derived_v1_4_3\\sensor_archives\\train\\segment-10017090168044687777_6380_000_6400_000_with_camera_labels.zip",
+      "size": 1179155823,
+      "modified_time_ns": 1783179714456712700
+    },
+    "frames": [
+      "frame_000",
+      "frame_001",
+      "frame_002",
+      "frame_003",
+      "frame_004"
+    ],
+    "preprocessing": {
+      "intensity_transform": "tanh",
+      "drop_nlz": false,
+      "lidars": [
+        "TOP",
+        "FRONT",
+        "SIDE_LEFT",
+        "SIDE_RIGHT",
+        "REAR"
+      ],
+      "returns": [
+        "return1",
+        "return2"
+      ]
+    },
+    "decode": {
+      "nms_iou": 0.5,
+      "score_threshold": 0.35,
+      "nms_convention": "pcdet",
+      "class_score_thresholds": null
+    },
+    "evaluation": {
+      "match_iou": 0.5
+    },
+    "dependencies": {
+      "project_root": "C:\\Users\\user\\Desktop\\Onechip\\Codex\\my project",
+      "weights_root": "C:\\Users\\user\\Documents\\\uac1d\uccb4\uc778\uc9c0\\weights_full_novelocity",
+      "python_executable": "C:\\Users\\user\\anaconda3\\python.exe",
+      "python_version": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]",
+      "numpy_version": "2.1.3",
+      "project_files": {
+        "file_count": 9,
+        "sha256": "5b189a28d2e98cab7e8813b249c6af63b9a9dddf32ce8466cb7985a5fe83a873"
+      },
+      "weight_files": {
+        "file_count": 154,
+        "sha256": "fce6da8d0c579eca8a8cdacb50fe319b8216159be648884a39d976207593048e"
+      }
+    }
+  },
   "grid": {
     "shape": [
       3,
@@ -21,9 +75,8 @@
   "frames": 5,
   "labels": 37,
   "outcome_counts": {
-    "LOW_HEATMAP_SCORE": 25,
-    "DETECTED": 10,
-    "HIGH_HEATMAP_EMITTED_UNMATCHED": 2
+    "DETECTED": 25,
+    "LOW_HEATMAP_SCORE": 12
   },
   "class_counts": {
     "VEHICLE": 37
@@ -33,8 +86,8 @@
       "frame": "frame_000",
       "labels": 7,
       "outcomes": {
-        "LOW_HEATMAP_SCORE": 4,
-        "DETECTED": 3
+        "DETECTED": 5,
+        "LOW_HEATMAP_SCORE": 2
       },
       "thresholds": {
         "VEHICLE": 0.35,
@@ -42,17 +95,17 @@
         "CYCLIST": 0.35
       },
       "heatmap_max_scores": {
-        "VEHICLE": 0.8024168014526367,
-        "PEDESTRIAN": 0.31928882002830505,
-        "CYCLIST": 0.09518767148256302
+        "VEHICLE": 0.799150288105011,
+        "PEDESTRIAN": 0.2726966142654419,
+        "CYCLIST": 0.061609528958797455
       }
     },
     {
       "frame": "frame_001",
       "labels": 7,
       "outcomes": {
-        "LOW_HEATMAP_SCORE": 5,
-        "DETECTED": 2
+        "DETECTED": 5,
+        "LOW_HEATMAP_SCORE": 2
       },
       "thresholds": {
         "VEHICLE": 0.35,
@@ -60,17 +113,17 @@
         "CYCLIST": 0.35
       },
       "heatmap_max_scores": {
-        "VEHICLE": 0.8184636235237122,
-        "PEDESTRIAN": 0.14417323470115662,
-        "CYCLIST": 0.06558482348918915
+        "VEHICLE": 0.8379413485527039,
+        "PEDESTRIAN": 0.2625535726547241,
+        "CYCLIST": 0.07730886340141296
       }
     },
     {
       "frame": "frame_002",
       "labels": 7,
       "outcomes": {
-        "LOW_HEATMAP_SCORE": 5,
-        "DETECTED": 2
+        "DETECTED": 5,
+        "LOW_HEATMAP_SCORE": 2
       },
       "thresholds": {
         "VEHICLE": 0.35,
@@ -78,18 +131,17 @@
         "CYCLIST": 0.35
       },
       "heatmap_max_scores": {
-        "VEHICLE": 0.4913090765476227,
-        "PEDESTRIAN": 0.27113592624664307,
-        "CYCLIST": 0.09067458659410477
+        "VEHICLE": 0.7994786500930786,
+        "PEDESTRIAN": 0.2544670104980469,
+        "CYCLIST": 0.08034689724445343
       }
     },
     {
       "frame": "frame_003",
       "labels": 7,
       "outcomes": {
-        "LOW_HEATMAP_SCORE": 4,
-        "HIGH_HEATMAP_EMITTED_UNMATCHED": 1,
-        "DETECTED": 2
+        "DETECTED": 5,
+        "LOW_HEATMAP_SCORE": 2
       },
       "thresholds": {
         "VEHICLE": 0.35,
@@ -97,18 +149,17 @@
         "CYCLIST": 0.35
       },
       "heatmap_max_scores": {
-        "VEHICLE": 0.8535366654396057,
-        "PEDESTRIAN": 0.23967058956623077,
-        "CYCLIST": 0.08163435012102127
+        "VEHICLE": 0.8157561421394348,
+        "PEDESTRIAN": 0.28866633772850037,
+        "CYCLIST": 0.11152149736881256
       }
     },
     {
       "frame": "frame_004",
       "labels": 9,
       "outcomes": {
-        "LOW_HEATMAP_SCORE": 7,
-        "HIGH_HEATMAP_EMITTED_UNMATCHED": 1,
-        "DETECTED": 1
+        "DETECTED": 5,
+        "LOW_HEATMAP_SCORE": 4
       },
       "thresholds": {
         "VEHICLE": 0.35,
@@ -116,9 +167,9 @@
         "CYCLIST": 0.35
       },
       "heatmap_max_scores": {
-        "VEHICLE": 0.8268948793411255,
-        "PEDESTRIAN": 0.5455941557884216,
-        "CYCLIST": 0.13244709372520447
+        "VEHICLE": 0.818108320236206,
+        "PEDESTRIAN": 0.19869364798069,
+        "CYCLIST": 0.03760373219847679
       }
     }
   ]

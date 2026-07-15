@@ -24,6 +24,11 @@ Waymo intensity is normalized with `tanh(intensity)` by default. This matches
 the original CenterPoint `read_single_waymo()` loader. Use
 `--intensity-transform none` only for an explicit raw-intensity comparison.
 
+Evaluation converts decoded CenterPoint yaw with
+`waymo_heading = -prediction_yaw - pi/2` and rotates both prediction and Waymo
+label polygons counter-clockwise. This convention is covered by the tests in
+`12_waymo_fn_analysis_project`.
+
 ## Multi-frame Cache Contract
 
 `run_waymo_multiframe_eval.py --skip-existing` reuses a frame only when its
