@@ -1,0 +1,36 @@
+flowchart LR
+  classDef input fill:#102832,stroke:#43e6e8,color:#efffff,stroke-width:2px;
+  classDef cpu fill:#16313a,stroke:#66f2ad,color:#efffff,stroke-width:2px;
+  classDef gpu fill:#172d36,stroke:#42d8ff,color:#efffff,stroke-width:2px;
+  classDef output fill:#2c3124,stroke:#e8ee55,color:#ffffff,stroke-width:2px;
+  classDef boundary fill:#241f36,stroke:#ad8cff,color:#ffffff,stroke-width:2px;
+
+  subgraph staged["단계형 검증 파이프라인: 파일 경계마다 Python과 비교"]
+    direction LR
+    S0["LiDAR points.bin<br/>x, y, z, intensity, elongation"]:::input
+    S1["Voxelization<br/>C++"]:::cpu
+    S2["Pillar decoration<br/>C++"]:::cpu
+    S3["Pillar Feature Network<br/>C++ CPU"]:::cpu
+    S4["BEV scatter<br/>C++ CPU"]:::cpu
+    S5["RPN backbone<br/>CUDA"]:::gpu
+    S6["CenterHead<br/>CUDA"]:::gpu
+    S7["Box decode<br/>CUDA"]:::gpu
+    S8["Rotated NMS<br/>C++ CPU"]:::boundary
+    S9["detections.csv<br/>3D boxes"]:::output
+    S0 --> S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8 --> S9
+  end
+
+  subgraph resident["GPU-resident 통합 파이프라인: 입력 1회 전송 후 최종 검출만 복사"]
+    direction LR
+    G0["LiDAR points.bin<br/>host memory"]:::input
+    G1["points<br/>device memory"]:::gpu
+    G2["Voxel + PFN + scatter<br/>CUDA"]:::gpu
+    G3["RPN + CenterHead<br/>CUDA"]:::gpu
+    G4["Decode + CUB sort + NMS<br/>CUDA"]:::gpu
+    G5["detections.csv<br/>final boxes only"]:::output
+    G0 -->|"H2D once"| G1 --> G2 --> G3 --> G4 -->|"D2H final only"| G5
+  end
+
+  S4 -. "BEV tensor file" .-> S5
+  S5 -. "RPN tensor file" .-> S6
+  S6 -. "five raw-map files" .-> S7

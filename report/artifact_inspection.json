@@ -1,0 +1,503 @@
+{
+  "schema_version": 1,
+  "repository_root": "C:\\Users\\user\\Desktop\\Onechip\\Codex\\my project",
+  "kitti_sample": {
+    "path": "00_reference/sample_data/kitti/000000.bin",
+    "dtype": "float32",
+    "shape": [
+      124668,
+      4
+    ],
+    "bytes": 1994688,
+    "first_point": [
+      52.89794158935547,
+      0.02298973873257637,
+      1.9979945421218872,
+      0.07999999821186066
+    ],
+    "minimum_per_feature": [
+      -78.08739471435547,
+      -55.723411560058594,
+      -11.556541442871094,
+      0.0
+    ],
+    "maximum_per_feature": [
+      77.96733093261719,
+      44.87861251831055,
+      2.82534122467041,
+      0.9900000095367432
+    ],
+    "mean_per_feature": [
+      -1.4353548181398386,
+      1.0248730565374882,
+      -1.2107386901001722,
+      0.29413402028773333
+    ],
+    "finite": true,
+    "verification_status": "[아티팩트 검산]"
+  },
+  "committed_stage_artifacts": {
+    "voxelization": {
+      "metadata": {
+        "num_pillars": 10404,
+        "max_points_per_pillar": 20,
+        "feature_dim": 4,
+        "coordinate_order": "batch,z,y,x",
+        "grid_size_xyz": [
+          468,
+          468,
+          1
+        ],
+        "voxel_size": [
+          0.32,
+          0.32,
+          6
+        ],
+        "point_cloud_range": [
+          -74.88,
+          -74.88,
+          -2,
+          74.88,
+          74.88,
+          4
+        ]
+      },
+      "pillars": {
+        "path": "C:/Users/user/Desktop/Onechip/Codex/my project/02_project/dump/kitti_000000/pillars.bin",
+        "dtype": "float32",
+        "shape": [
+          10404,
+          20,
+          4
+        ],
+        "actual_bytes": 3329280,
+        "expected_bytes": 3329280,
+        "size_matches_shape_dtype": true,
+        "minimum": -73.60102844238281,
+        "maximum": 74.85389709472656,
+        "mean": -0.2107754653761691,
+        "first_values": [
+          52.89794158935547,
+          0.02298973873257637,
+          1.9979945421218872,
+          0.07999999821186066,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "verification_status": "[아티팩트 검산]"
+      },
+      "coordinates": {
+        "path": "C:/Users/user/Desktop/Onechip/Codex/my project/02_project/dump/kitti_000000/coordinates.bin",
+        "dtype": "int32",
+        "shape": [
+          10404,
+          4
+        ],
+        "actual_bytes": 166464,
+        "expected_bytes": 166464,
+        "size_matches_shape_dtype": true,
+        "minimum": 0,
+        "maximum": 467,
+        "mean": 109.89792387543253,
+        "first_values": [
+          0,
+          0,
+          234,
+          399,
+          0,
+          0,
+          234,
+          401,
+          0,
+          0
+        ],
+        "verification_status": "[아티팩트 검산]"
+      },
+      "num_points": {
+        "path": "C:/Users/user/Desktop/Onechip/Codex/my project/02_project/dump/kitti_000000/num_points.bin",
+        "dtype": "int32",
+        "shape": [
+          10404
+        ],
+        "actual_bytes": 41616,
+        "expected_bytes": 41616,
+        "size_matches_shape_dtype": true,
+        "minimum": 1,
+        "maximum": 20,
+        "mean": 6.902056901191849,
+        "first_values": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "verification_status": "[아티팩트 검산]"
+      }
+    },
+    "pillar_decoration": {
+      "metadata": {
+        "num_pillars": 10404,
+        "max_points_per_pillar": 20,
+        "input_feature_dim": 4,
+        "decorated_feature_dim": 9,
+        "feature_order": [
+          "raw_features",
+          "cluster_offset_xyz",
+          "center_offset_xy"
+        ],
+        "coordinate_order": "batch,z,y,x",
+        "voxel_size": [
+          0.32,
+          0.32,
+          6
+        ],
+        "point_cloud_range": [
+          -74.88,
+          -74.88,
+          -2,
+          74.88,
+          74.88,
+          4
+        ]
+      },
+      "decorated_pillars": {
+        "path": "C:/Users/user/Desktop/Onechip/Codex/my project/03_pillar_feature_project/dump/kitti_000000_decorated/decorated_pillars.bin",
+        "dtype": "float32",
+        "shape": [
+          10404,
+          20,
+          9
+        ],
+        "actual_bytes": 7490880,
+        "expected_bytes": 7490880,
+        "size_matches_shape_dtype": true,
+        "minimum": -73.60102844238281,
+        "maximum": 74.85389709472656,
+        "mean": -0.09367126233092762,
+        "first_values": [
+          52.89794158935547,
+          0.02298973873257637,
+          1.9979945421218872,
+          0.07999999821186066,
+          0.0,
+          0.0,
+          0.0,
+          -0.06206512451171875,
+          -0.13701392710208893,
+          0.0
+        ],
+        "verification_status": "[아티팩트 검산]"
+      }
+    },
+    "pfn_dummy": {
+      "metadata": {
+        "num_pillars": 10404,
+        "out_channels": 64,
+        "shape": [
+          10404,
+          64
+        ]
+      },
+      "pillar_features": {
+        "path": "C:/Users/user/Desktop/Onechip/Codex/my project/04_pfn_project/dump/kitti_000000_pfn/pillar_features.bin",
+        "dtype": "float32",
+        "shape": [
+          10404,
+          64
+        ],
+        "actual_bytes": 2663424,
+        "expected_bytes": 2663424,
+        "size_matches_shape_dtype": true,
+        "minimum": 0.0,
+        "maximum": 9.061142921447754,
+        "mean": 0.5437097613677077,
+        "first_values": [
+          0.0,
+          0.0,
+          0.6497694849967957,
+          2.0145509243011475,
+          3.7043700218200684,
+          0.0,
+          0.0,
+          0.0,
+          1.1056078672409058,
+          2.799332857131958
+        ],
+        "verification_status": "[아티팩트 검산]"
+      },
+      "note": "커밋된 파일은 deterministic dummy PFN 결과이며 checkpoint PFN 결과가 아니다."
+    }
+  },
+  "reference_comparison_5frames": {
+    "raw": {
+      "tp": 12,
+      "fp": 2,
+      "fn": 25,
+      "precision_stored": 0.8571428571428571,
+      "precision_recomputed": 0.8571428571428571,
+      "recall_stored": 0.32432432432432434,
+      "recall_recomputed": 0.32432432432432434,
+      "f1_recomputed": 0.4705882352941177,
+      "precision_matches": true,
+      "recall_matches": true,
+      "verification_status": "[수식 검산]"
+    },
+    "tanh_reference": {
+      "tp": 25,
+      "fp": 3,
+      "fn": 12,
+      "precision_stored": 0.8928571428571429,
+      "precision_recomputed": 0.8928571428571429,
+      "recall_stored": 0.6756756756756757,
+      "recall_recomputed": 0.6756756756756757,
+      "f1_recomputed": 0.7692307692307693,
+      "precision_matches": true,
+      "recall_matches": true,
+      "verification_status": "[수식 검산]"
+    },
+    "stage_validation": {
+      "comparison_contract_passed": true,
+      "source_provenance_passed": true,
+      "preprocessing_all_frames_passed": true,
+      "pfn_all_frames_passed": true,
+      "pfn_max_abs_diff": 4.649162292480469e-06,
+      "scatter_all_frames_passed": true,
+      "scatter_max_abs_diff": 0.0,
+      "rpn_probes_passed": true,
+      "rpn_probe_count": 38,
+      "rpn_max_abs_diff": 8.343127593790634e-07,
+      "head_gt_peaks_passed": true,
+      "head_gt_peak_count": 37,
+      "head_max_abs_diff": 1.9073486328125e-06
+    },
+    "source": "11_reference_comparison_project/reference_comparison_5frames.json",
+    "verification_status": "[아티팩트 검산]"
+  },
+  "head_validation_5frames": {
+    "frames": 5,
+    "labels": 37,
+    "outcome_counts": {
+      "DETECTED": 25,
+      "LOW_HEATMAP_SCORE": 12
+    },
+    "source": "10_head_validation_project/head_validation_summary_5frames.json",
+    "verification_status": "[아티팩트 검산]"
+  },
+  "false_negative_analysis_5frames": {
+    "baseline": {
+      "tp": 25,
+      "fp": 3,
+      "fn": 12,
+      "precision_stored": 0.8928571428571429,
+      "precision_recomputed": 0.8928571428571429,
+      "recall_stored": 0.6756756756756757,
+      "recall_recomputed": 0.6756756756756757,
+      "f1_recomputed": 0.7692307692307693,
+      "precision_matches": true,
+      "recall_matches": true,
+      "verification_status": "[수식 검산]"
+    },
+    "official_geometry": {
+      "tp": 25,
+      "fp": 3,
+      "fn": 12,
+      "precision_stored": 0.8928571428571429,
+      "precision_recomputed": 0.8928571428571429,
+      "recall_stored": 0.6756756756756757,
+      "recall_recomputed": 0.6756756756756757,
+      "f1_recomputed": 0.7692307692307693,
+      "precision_matches": true,
+      "recall_matches": true,
+      "verification_status": "[수식 검산]"
+    },
+    "classification_counts": {
+      "LOW_MODEL_SCORE": 9,
+      "LOW_POINT_COUNT": 3
+    },
+    "effective_point_summary": {
+      "minimum": 0.0,
+      "median": 6.0,
+      "mean": 6.833333333333333,
+      "maximum": 16.0
+    },
+    "source": "12_waymo_fn_analysis_project/fn_analysis_5frames.json",
+    "verification_status": "[아티팩트 검산]"
+  },
+  "operating_point_198frames": {
+    "frame_count": 198,
+    "label_count": 4337,
+    "precision_floor": 0.8,
+    "best_f1_recomputed": {
+      "threshold": 0.3,
+      "predictions": 3012,
+      "labels": 4337,
+      "tp": 2745,
+      "fp": 267,
+      "fn": 1592,
+      "precision": 0.9113545816733067,
+      "recall": 0.632925985704404,
+      "f1": 0.7470404136617227,
+      "formula_matches": true
+    },
+    "best_recall_at_precision_floor_recomputed": {
+      "threshold": 0.25,
+      "predictions": 3357,
+      "labels": 4337,
+      "tp": 2820,
+      "fp": 537,
+      "fn": 1517,
+      "precision": 0.8400357462019661,
+      "recall": 0.6502190454231035,
+      "f1": 0.7330387314790745,
+      "formula_matches": true
+    },
+    "selected_threshold_stored": 0.25,
+    "all_threshold_formulas_match": true,
+    "threshold_rows": [
+      {
+        "threshold": 0.05,
+        "predictions": 48503,
+        "labels": 4337,
+        "tp": 3351,
+        "fp": 45152,
+        "fn": 986,
+        "precision": 0.06908850998907284,
+        "recall": 0.7726539082314964,
+        "f1": 0.12683573050719152,
+        "formula_matches": true
+      },
+      {
+        "threshold": 0.1,
+        "predictions": 10971,
+        "labels": 4337,
+        "tp": 3142,
+        "fp": 7829,
+        "fn": 1195,
+        "precision": 0.2863913954972199,
+        "recall": 0.7244639151487203,
+        "f1": 0.41050431147112615,
+        "formula_matches": true
+      },
+      {
+        "threshold": 0.15,
+        "predictions": 5547,
+        "labels": 4337,
+        "tp": 2989,
+        "fp": 2558,
+        "fn": 1348,
+        "precision": 0.5388498287362539,
+        "recall": 0.6891860733225732,
+        "f1": 0.604815864022663,
+        "formula_matches": true
+      },
+      {
+        "threshold": 0.2,
+        "predictions": 3970,
+        "labels": 4337,
+        "tp": 2901,
+        "fp": 1069,
+        "fn": 1436,
+        "precision": 0.7307304785894206,
+        "recall": 0.668895549919299,
+        "f1": 0.69844709281329,
+        "formula_matches": true
+      },
+      {
+        "threshold": 0.25,
+        "predictions": 3357,
+        "labels": 4337,
+        "tp": 2820,
+        "fp": 537,
+        "fn": 1517,
+        "precision": 0.8400357462019661,
+        "recall": 0.6502190454231035,
+        "f1": 0.7330387314790745,
+        "formula_matches": true
+      },
+      {
+        "threshold": 0.3,
+        "predictions": 3012,
+        "labels": 4337,
+        "tp": 2745,
+        "fp": 267,
+        "fn": 1592,
+        "precision": 0.9113545816733067,
+        "recall": 0.632925985704404,
+        "f1": 0.7470404136617227,
+        "formula_matches": true
+      },
+      {
+        "threshold": 0.35,
+        "predictions": 2816,
+        "labels": 4337,
+        "tp": 2669,
+        "fp": 147,
+        "fn": 1668,
+        "precision": 0.9477982954545454,
+        "recall": 0.6154023518561217,
+        "f1": 0.7462603103592899,
+        "formula_matches": true
+      },
+      {
+        "threshold": 0.4,
+        "predictions": 2683,
+        "labels": 4337,
+        "tp": 2596,
+        "fp": 87,
+        "fn": 1741,
+        "precision": 0.9675736116287738,
+        "recall": 0.5985704403965875,
+        "f1": 0.7396011396011395,
+        "formula_matches": true
+      },
+      {
+        "threshold": 0.5,
+        "predictions": 2435,
+        "labels": 4337,
+        "tp": 2404,
+        "fp": 31,
+        "fn": 1933,
+        "precision": 0.9872689938398357,
+        "recall": 0.5543002075167166,
+        "f1": 0.7099822799763733,
+        "formula_matches": true
+      },
+      {
+        "threshold": 0.6,
+        "predictions": 2185,
+        "labels": 4337,
+        "tp": 2177,
+        "fp": 8,
+        "fn": 2160,
+        "precision": 0.9963386727688787,
+        "recall": 0.5019598801014526,
+        "f1": 0.6675866298681385,
+        "formula_matches": true
+      },
+      {
+        "threshold": 0.7,
+        "predictions": 1812,
+        "labels": 4337,
+        "tp": 1812,
+        "fp": 0,
+        "fn": 2525,
+        "precision": 1.0,
+        "recall": 0.41780032280378143,
+        "f1": 0.5893641242478452,
+        "formula_matches": true
+      }
+    ],
+    "source": "13_waymo_operating_point_project/operating_point_analysis_198frames.json and threshold_summary_198frames.csv",
+    "verification_status": "[아티팩트 검산]"
+  }
+}

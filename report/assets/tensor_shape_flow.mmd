@@ -1,0 +1,29 @@
+flowchart LR
+  classDef data fill:#102832,stroke:#43e6e8,color:#efffff,stroke-width:2px;
+  classDef tensor fill:#17352e,stroke:#66f2ad,color:#efffff,stroke-width:2px;
+  classDef map fill:#172d36,stroke:#42d8ff,color:#efffff,stroke-width:2px;
+  classDef result fill:#31351e,stroke:#e8ee55,color:#ffffff,stroke-width:2px;
+
+  A["Input points<br/>N x 5 float32"]:::data
+  B["Pillars<br/>P x 20 x 5"]:::tensor
+  C["Decorated pillars<br/>P x 20 x 10"]:::tensor
+  D["PFN features<br/>P x 64"]:::tensor
+  E["BEV pseudo-image<br/>1 x 64 x 468 x 468"]:::map
+  F0["RPN block 0<br/>1 x 64 x 468 x 468"]:::map
+  F1["RPN block 1<br/>1 x 128 x 234 x 234"]:::map
+  F2["RPN block 2<br/>1 x 256 x 117 x 117"]:::map
+  G["Upsample + concatenate<br/>1 x 384 x 468 x 468"]:::map
+  H["CenterHead raw maps<br/>reg 2 | height 1 | dim 3<br/>rot 2 | heatmap 3"]:::map
+  I["Decoded candidates<br/>x y z dx dy dz yaw score label"]:::result
+  J["NMS results<br/>M x 10 rows"]:::result
+
+  A --> B --> C --> D --> E
+  E --> F0 --> G
+  E --> F1 --> G
+  E --> F2 --> G
+  G --> H --> I --> J
+
+  N1["P: non-empty pillar count<br/>maximum 60,000"]:::data
+  N2["coordinate order<br/>batch, z, y, x"]:::data
+  N1 -.-> B
+  N2 -.-> B

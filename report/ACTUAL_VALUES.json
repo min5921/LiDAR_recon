@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "repository": {
+    "url": "https://github.com/min5921/LiDAR_recon.git",
+    "root_used": "C:/Users/user/Desktop/Onechip/Codex/my project",
+    "head": "be012d4d065073a3e2e0e647a620abde5d535296",
+    "branch": "main",
+    "initial_worktree_clean": true,
+    "verification_status": "[직접 실행]",
+    "source": "git rev-parse HEAD; git branch --show-current; git status --short"
+  },
+  "verification_legend": {
+    "direct": "[직접 실행]",
+    "artifact": "[아티팩트 검산]",
+    "repository_record": "[저장소 기록]",
+    "formula": "[수식 검산]",
+    "unverified": "[미검증]"
+  },
+  "values": [
+    {
+      "id": "environment.toolchain",
+      "value": {
+        "cmake": "4.3.2",
+        "cuda_toolkit": "13.1 (nvcc 13.1.80)",
+        "gpu": "NVIDIA GeForce RTX 5080",
+        "gpu_memory_mib": 16303,
+        "driver": "591.44",
+        "python": "3.12.13",
+        "numpy": "2.3.5"
+      },
+      "verification_status": "[직접 실행]",
+      "source": "cmake --version; nvcc --version; nvidia-smi; bundled Python version checks"
+    },
+    {
+      "id": "model.geometry",
+      "value": {
+        "point_cloud_range": [-74.88, -74.88, -2.0, 74.88, 74.88, 4.0],
+        "voxel_size": [0.32, 0.32, 6.0],
+        "grid_size_xyz": [468, 468, 1],
+        "max_points_per_pillar": 20,
+        "max_pillars": 60000,
+        "coordinate_order": "batch,z,y,x"
+      },
+      "verification_status": "[수식 검산]",
+      "source": "02_project source/config; (74.88 - (-74.88)) / 0.32 = 468 and (4 - (-2)) / 6 = 1"
+    },
+    {
+      "id": "artifact.kitti_000000",
+      "value": {
+        "shape": [124668, 4],
+        "dtype": "float32",
+        "bytes": 1994688,
+        "first_point": [52.89794158935547, 0.02298973873257637, 1.9979945421218872, 0.07999999821186066]
+      },
+      "verification_status": "[아티팩트 검산]",
+      "source": "00_reference/sample_data/kitti/000000.bin parsed by report_tools/inspect_outputs.py"
+    },
+    {
+      "id": "artifact.committed_voxel_dump",
+      "value": {
+        "num_pillars": 10404,
+        "pillars_shape": [10404, 20, 4],
+        "pillars_bytes": 3329280,
+        "coordinates_shape": [10404, 4],
+        "num_points_shape": [10404]
+      },
+      "verification_status": "[아티팩트 검산]",
+      "source": "02_project/dump/kitti_000000 metadata and binary files"
+    },
+    {
+      "id": "artifact.committed_decorated_dump",
+      "value": {
+        "num_pillars": 10404,
+        "input_feature_dim": 4,
+        "decorated_feature_dim": 9,
+        "shape": [10404, 20, 9],
+        "bytes": 7490880
+      },
+      "verification_status": "[아티팩트 검산]",
+      "source": "03_pillar_feature_project/dump/kitti_000000_decorated metadata and binary"
+    },
+    {
+      "id": "artifact.committed_dummy_pfn",
+      "value": {
+        "shape": [10404, 64],
+        "bytes": 2663424,
+        "is_checkpoint_output": false
+      },
+      "verification_status": "[아티팩트 검산]",
+      "source": "04_pfn_project/dump/kitti_000000_pfn plus src/main.cpp and src/main_checkpoint.cpp"
+    },
+    {
+      "id": "direct.staged_voxelization_feature4",
+      "value": {
+        "points": 124668,
+        "pillars": 10404,
+        "coordinates_equal_python": true,
+        "num_points_equal_python": true,
+        "pillars_equal_python": true,
+        "max_abs_diff": 0.0
+      },
+      "verification_status": "[직접 실행]",
+      "source": "temporary build centerpoint_voxel_dump and compare_python_cpp_voxelization.py"
+    },
+    {
+      "id": "direct.staged_voxelization_feature5",
+      "value": {
+        "points": 124668,
+        "pillars": 10404,
+        "input_shape": [124668, 5],
+        "added_feature": "elongation_zero",
+        "max_abs_diff": 0.0
+      },
+      "verification_status": "[직접 실행]",
+      "source": "make_kitti_feature5_fixture.py, centerpoint_voxel_dump and Python comparator"
+    },
+    {
+      "id": "direct.staged_pillar_decoration",
+      "value": {
+        "input_shape": [10404, 20, 5],
+        "output_shape": [10404, 20, 10],
+        "equal_python": true,
+        "max_abs_diff": 0.0
+      },
+      "verification_status": "[직접 실행]",
+      "source": "centerpoint_decorate_pillars and compare_python_cpp_pillar_feature.py"
+    },
+    {
+      "id": "direct.staged_checkpoint_pfn",
+      "value": {
+        "layers": ["10->32", "64->64"],
+        "output_shape": [10404, 64],
+        "allclose_python": true,
+        "max_abs_diff": 2.86e-6,
+        "mean_abs_diff": 8.0e-8,
+        "cpu_time_ms_single_run": 3615.995
+      },
+      "verification_status": "[직접 실행]",
+      "source": "centerpoint_pfn_checkpoint and compare_python_cpp_pfn_checkpoint.py; local ignored weight directory",
+      "caveat": "single run, not a benchmark"
+    },
+    {
+      "id": "direct.staged_scatter",
+      "value": {
+        "input_shape": [10404, 64],
+        "output_shape": [1, 64, 468, 468],
+        "occupied_cells": 10404,
+        "exactly_equal_python": true,
+        "max_abs_diff": 0.0
+      },
+      "verification_status": "[직접 실행]",
+      "source": "centerpoint_scatter and compare_python_cpp_scatter.py"
+    },
+    {
+      "id": "direct.staged_rpn",
+      "value": {
+        "input_shape": [1, 64, 468, 468],
+        "block_shapes": [[1, 64, 468, 468], [1, 128, 234, 234], [1, 256, 117, 117]],
+        "deblock_shapes": [[1, 128, 468, 468], [1, 128, 468, 468], [1, 128, 468, 468]],
+        "output_shape": [1, 384, 468, 468],
+        "selected_checks_passed": true,
+        "largest_selected_abs_diff": 2.21e-6,
+        "cuda_time_ms_single_run": 223.657
+      },
+      "verification_status": "[직접 실행]",
+      "source": "centerpoint_rpn_full_cuda --probes and check_selected_rpn_values.py",
+      "caveat": "single run, not a benchmark"
+    },
+    {
+      "id": "direct.staged_center_head",
+      "value": {
+        "input_shape": [1, 384, 468, 468],
+        "output_channels": {"reg": 2, "height": 1, "dim": 3, "rot": 2, "hm": 3},
+        "spatial_shape": [468, 468],
+        "selected_max_abs_diff": 3.5762786865234375e-7,
+        "cuda_time_ms_single_run": 247.378
+      },
+      "verification_status": "[직접 실행]",
+      "source": "centerpoint_head_cuda and validate_selected.py",
+      "caveat": "single run, not a benchmark"
+    },
+    {
+      "id": "direct.staged_decode_legacy_defaults",
+      "value": {
+        "score_threshold": 0.1,
+        "nms_iou": 0.7,
+        "nms_convention": "current",
+        "candidates": 811,
+        "detections": 500,
+        "python_max_abs_diff": 7.62816163e-6,
+        "validation_passed": true
+      },
+      "verification_status": "[직접 실행]",
+      "source": "centerpoint_decode default arguments and validate_reference.py"
+    },
+    {
+      "id": "direct.staged_decode_operating_settings",
+      "value": {
+        "score_threshold": 0.35,
+        "nms_iou": 0.5,
+        "nms_convention": "pcdet",
+        "candidates": 54,
+        "detections": 20,
+        "legacy_validator_compatible": false
+      },
+      "verification_status": "[직접 실행]",
+      "source": "centerpoint_decode explicit arguments; validate_reference.py failed with AssertionError (20, 500) because it hard-codes legacy settings"
+    },
+    {
+      "id": "direct.gpu_resident_waymo_frame000",
+      "value": {
+        "input_points": 183680,
+        "valid_points": 183505,
+        "pillars": 9529,
+        "bev_shape": [1, 64, 468, 468],
+        "rpn_shape": [1, 384, 468, 468],
+        "candidates": 28,
+        "detections": 5,
+        "intermediate_tensor_files": 0,
+        "preprocess_python_max_abs_diff": 6.20e-6,
+        "rpn_probe_count": 38,
+        "rpn_probe_max_abs_diff": 6.85453415e-7,
+        "head_probe_count": 22,
+        "head_probe_max_abs_diff": 3.81469727e-6,
+        "decode_matches": "28/28",
+        "decode_max_abs_diff": 8.92439954e-6,
+        "gpu_nms_matches": "5/5",
+        "full_pipeline_matches": "5/5",
+        "full_pipeline_max_abs_diff": 7.15e-6
+      },
+      "verification_status": "[직접 실행]",
+      "source": "temporary centerpoint_gpu_preprocess/rpn/full builds and project 14 Python validators; local external Waymo frame and ignored weights"
+    },
+    {
+      "id": "artifact.waymo_raw_vs_tanh_5frames",
+      "value": {
+        "labels": 37,
+        "raw": {"predictions": 14, "tp": 12, "fp": 2, "fn": 25, "precision": 0.8571428571428571, "recall": 0.32432432432432434},
+        "tanh": {"predictions": 28, "tp": 25, "fp": 3, "fn": 12, "precision": 0.8928571428571429, "recall": 0.6756756756756757},
+        "metric_formulas_recomputed": true
+      },
+      "verification_status": "[아티팩트 검산]",
+      "source": "11_reference_comparison_project/reference_comparison_5frames.json parsed and formulas recomputed"
+    },
+    {
+      "id": "artifact.waymo_false_negative_5frames",
+      "value": {
+        "false_negatives": 12,
+        "low_model_score": 9,
+        "low_point_count": 3,
+        "effective_points_min": 0.0,
+        "effective_points_median": 6.0,
+        "effective_points_mean": 6.833333333333333,
+        "effective_points_max": 16.0
+      },
+      "verification_status": "[아티팩트 검산]",
+      "source": "12_waymo_fn_analysis_project/fn_analysis_5frames.json"
+    },
+    {
+      "id": "artifact.waymo_operating_point_198frames",
+      "value": {
+        "frames": 198,
+        "labels": 4337,
+        "best_f1_threshold": 0.3,
+        "best_f1": 0.7470404136617227,
+        "precision_floor": 0.8,
+        "best_recall_at_precision_floor_threshold": 0.25,
+        "selected_threshold": 0.25,
+        "selected_precision": 0.8400357462019661,
+        "selected_recall": 0.6502190454231035,
+        "selected_f1": 0.7330387314790745,
+        "all_csv_metric_formulas_match": true
+      },
+      "verification_status": "[아티팩트 검산]",
+      "source": "13_waymo_operating_point_project JSON and CSV parsed; precision, recall, F1 recomputed"
+    },
+    {
+      "id": "repository_record.gpu_resident_5frames",
+      "value": {
+        "bev_frames_passed": "5/5",
+        "rpn_probes_passed": "190/190",
+        "head_probes_passed": "110/110",
+        "decode_candidates_passed": "143/143",
+        "final_detections_passed": "28/28",
+        "maximum_reported_output_diff": 7.15e-6
+      },
+      "verification_status": "[저장소 기록]",
+      "source": "14_gpu_resident_pipeline_project/VALIDATION_REPORT.md; this session directly reran frame_000 only"
+    },
+    {
+      "id": "direct.unit_tests",
+      "value": {
+        "reference_comparison_tests": {"passed": 7, "failed": 0},
+        "false_negative_tests": {"passed": 9, "failed": 0},
+        "operating_point_tests": {"passed": 6, "failed": 0}
+      },
+      "verification_status": "[직접 실행]",
+      "source": "python -m unittest for projects 11, 12, and 13"
+    }
+  ]
+}
